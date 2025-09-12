@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DevTalles Code Quest 2025",
-  description: "Desarrollado por Aurora Levanti, Josa y False",
+  description: "Desarrollado por Aurora Levanti, Josa y Rodolfo Xiloj",
 };
 
 export default function RootLayout({
