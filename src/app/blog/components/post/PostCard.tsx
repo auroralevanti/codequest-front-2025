@@ -1,6 +1,9 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@radix-ui/react-separator";
-
+import { AiOutlineDelete } from "react-icons/ai";
+import { FiEdit2 } from "react-icons/fi";
+import { AiOutlineHeart } from "react-icons/ai";
+import Link from "next/link";
 
 const posts = [
   {
@@ -12,7 +15,7 @@ const posts = [
   },
   {
     id: 2,
-    author: 'Rob',
+    author: 'Rodolfo',
     date: '19/09/2025',
     title: 'Titulo de Prueba',
     text: ' Texto prueba de siempre, Texto prueba de siempre, Texto prueba de siempre, Texto prueba de siempre, Texto prueba de siempre, Texto prueba de siempre, Texto prueba de siempre, '
@@ -46,7 +49,24 @@ export const PostCard = () => {
             </CardContent>
             <Separator className=" border-gray-200 border-1" />
             <CardFooter>
-              <h5 className="text-gray-400">Marcar como favorito, editar, eliminar</h5>
+              {/* <h5 className="text-gray-400">Marcar como favorito, editar, eliminar</h5> */}
+              <div className="flex fle-row mr-2 text-gray-400">
+                <AiOutlineHeart />
+              </div>
+              <div className="flex fle-row mr-2 text-gray-400">
+                {/* Agregar link de post especifico */}
+                {/* Hacer esto dinamico solo el susuario puede borrar su propio post, si es admin puede hacerlo */}
+                <Link href='/' passHref>
+                  <AiOutlineDelete />
+                </Link>
+              </div>
+              <div className="flex fle-row mr-2 text-gray-400">
+                {/* Agregar link de post especifico */}
+                {/* Hacer esto dinamico solo post de usuarios pueden editar, si es usuario admin no tiene esta opcion */}
+                <Link href='/' passHref>
+                  <FiEdit2 />
+                </Link>
+              </div>
             </CardFooter>
           </Card>
         ))
