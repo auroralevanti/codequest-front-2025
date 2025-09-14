@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@radix-ui/react-separator";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 
 interface LoginForm {
@@ -23,6 +24,7 @@ export default function LoginPage() {
 
   const submitLogin: SubmitHandler<LoginForm> = ({ user, password }: LoginForm) => {
     console.log(user, password);
+    redirect('/blog')
   };
 
   return (
@@ -54,7 +56,10 @@ export default function LoginPage() {
             >
             </Input>
             <div className="flex justify-center">
-              <Button className="bg-accent-background mt-5 mb-5">
+              <Button 
+              className="bg-accent-background mt-5 mb-5"
+              type='submit'
+              >
                 Ingreso
               </Button>
 
@@ -69,9 +74,9 @@ export default function LoginPage() {
             Discord / GitHub
           </div>
           <div className="flex flex-row mb-10">
-            <p className="text-white">No eres miembro? </p>
+            <p className="text-white">¿Quieres ser miembro? &nbsp;</p>
             <Link href='/' passHref>
-              <p className="text-accent-background">Inicia el Registro gratis</p>
+              <p className="text-accent-background font-bold">Inicia el Registro gratis</p>
             </Link>
           </div>
         </div>
