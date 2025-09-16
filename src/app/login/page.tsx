@@ -46,7 +46,6 @@ export default function LoginPage() {
         alert('Error en email o password');
       }; */
       if( resp ){
-        alert('Bienvenido');
         router.push('/blog')
       }
 

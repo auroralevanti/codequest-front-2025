@@ -50,7 +50,6 @@ export default function RegisterNewUserPage() {
       alert('Error en email o password');
     }; */
     if( resp ){
-      alert('Bienvenido');
       router.push('/blog')
     }
   
