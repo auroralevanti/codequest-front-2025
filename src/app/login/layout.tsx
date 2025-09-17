@@ -6,7 +6,7 @@ export default function DashboardLayout({
   return (
     <>
 
-      <div className="h-full bg-darker-purple">
+      <div className="h-screen bg-darker-purple">
         <div className="h-full">
           { children }
         </div>

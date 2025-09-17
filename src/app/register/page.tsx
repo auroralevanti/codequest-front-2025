@@ -51,9 +51,9 @@ export default function RegisterNewUserPage() {
    
       setUserCookie({
         id: resp.user.id,
-        name: resp.user.name,
+        username: resp.user.username,
         email: resp.user.email,
-        role: resp.user.role,
+        roles: resp.user.roles,
         avatar: resp.user.avatar,
         token: resp.token
       });
@@ -91,7 +91,7 @@ export default function RegisterNewUserPage() {
   };
   
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen">
       <div className=" flex flex-col sm:mx-auto sm:w-full sm:max-w-sm border-accent-background border-2 rounded-2xl mt-10 mb-10 justify-center items-center">
         <div className=" mt-10 w-50 pb-10">
           <Image

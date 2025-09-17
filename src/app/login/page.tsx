@@ -138,7 +138,7 @@ const LoginPage = () => {
             <span className="text-white">&nbsp; o continua con &nbsp;</span>
             <Separator className="flex-grow border-gray-300 border-1 ml-1" />
           </div>
-          <div className="text-white mb-10 justify-center items-center">
+          <div className="flex text-white mb-10 justify-center items-center">
             <Button
               variant='outline'
               className="justify-center items-center">
