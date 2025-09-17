@@ -6,6 +6,7 @@
   --accent-background: oklch(0.8959 0.065 307.18);
   --darker-purple: oklch(0.1796 0.0498 293.68);
   --button-background: oklch(0.8959 0.065 307.18);
+  --devi-color: oklch(0.5525 0.2889 298.93);
   
 }
 
@@ -15,6 +16,7 @@
   --color-accent-background: var(--accent-background);
   --color-darker-purple: var(--darker-purple);
   --color-button: var(--button-background);
+  --color-devi-color: var(--devi-color);
 }
 
 body {

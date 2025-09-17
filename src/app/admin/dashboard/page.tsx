@@ -80,7 +80,6 @@ export default function AdminDashboardPage() {
       
      console.log('token de admin: ', token)
       
-      // Verify token is available
       if (!token) {
         console.error('No admin token available');
         router.push('/login');
@@ -95,33 +94,37 @@ export default function AdminDashboardPage() {
 
       if (usersResponse.status === 401 || usersResponse.status === 403) {
         console.error('Unauthorized access');
-        router.push('/login');
+        alert('Acceso no permitido');
         return;
       }
 
       const usersData = await usersResponse.json();
-      console.log('Usuarios: ', usersData);
+      //console.log('Usuarios: ', usersData);
       setUsers(usersData || []);
 
       // Fetch posts
-      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts?limit=10&offset=0&search=javascript&status=published&authorId=uuid-author-id&categoryId=uuid-category-id&tagId=uuid-tag-id&publishedAfter=2024-01-01T00%3A00%3A00.000Z&publishedBefore=2024-12-31T23%3A59%3A59.999', {
+      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      
       if (postsResponse.status === 401 || postsResponse.status === 403) {
         console.error('Unauthorized access');
-        router.push('/login');
+        alert('Acceso no permitido');
         return;
       }
 
       const postsData = await postsResponse.json();
       console.log('Posts:', postsData);
-      setPosts(postsData || []);
+      const post = postsData.posts;
+      console.log('Posts como objetos: ', post)
+      setPosts(post || []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
+      alert('Error en servidor');
     } finally {
       setLoading(false);
     }
@@ -201,7 +204,6 @@ export default function AdminDashboardPage() {
     post.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Show loading while checking authentication
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -214,7 +216,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // Show unauthorized message if not admin (this shouldn't render due to redirect)
   if (!authLoading && !isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -230,7 +231,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // Show loading while fetching data
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -252,10 +252,6 @@ export default function AdminDashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard de Administrador</h1>
               <p className="text-gray-600">Gestiona usuarios, posts y configuración del sistema</p>
             </div>
-            <div className="flex items-center gap-2">
-              <FaUserShield className="h-6 w-6 text-purple-600" />
-              <span className="text-sm text-gray-600">Bienvenido, {userData?.username || 'Admin'}</span>
-            </div>
           </div>
         </div>
 
@@ -264,7 +260,7 @@ export default function AdminDashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FaUsers className="h-8 w-8 text-blue-600" />
+                <FaUsers className="h-8 w-8 text-devi-color" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Usuarios</p>
                   <p className="text-2xl font-bold text-gray-900">{users.length}</p>
@@ -276,7 +272,7 @@ export default function AdminDashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FaFileAlt className="h-8 w-8 text-green-600" />
+                <FaFileAlt className="h-8 w-8 text-devi-color" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Posts</p>
                   <p className="text-2xl font-bold text-gray-900">{posts.length}</p>
@@ -288,7 +284,7 @@ export default function AdminDashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FaUserShield className="h-8 w-8 text-purple-600" />
+                <FaUserShield className="h-8 w-8 text-devi-color" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Admins</p>
                   <p className="text-2xl font-bold text-gray-900">
@@ -316,7 +312,7 @@ export default function AdminDashboardPage() {
             
             <div className="flex gap-2">
               <Button
-                variant={activeTab === 'users' ? 'default' : 'outline'}
+                variant={activeTab === 'users' ? 'link' : 'ghost'}
                 onClick={() => setActiveTab('users')}
                 className="flex items-center gap-2"
               >
@@ -324,7 +320,7 @@ export default function AdminDashboardPage() {
                 Usuarios
               </Button>
               <Button
-                variant={activeTab === 'posts' ? 'default' : 'outline'}
+                variant={activeTab === 'posts' ? 'link' : 'ghost'}
                 onClick={() => setActiveTab('posts')}
                 className="flex items-center gap-2"
               >
@@ -332,8 +328,8 @@ export default function AdminDashboardPage() {
                 Posts
               </Button>
               <Button
-                onClick={() => setShowCreateAdmin(true)}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+                onClick={() => router.push('/admin/register')}
+                className="flex items-center gap-2 bg-accent-background "
               >
                 <FaUserPlus />
                 Crear Admin
@@ -374,6 +370,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(`/admin/users/${user.id}`, '_blank')}
+                        className='bg-white border-background'
                       >
                         <FaEye />
                       </Button>
@@ -381,6 +378,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(`/admin/users/${user.id}/edit`, '_blank')}
+                        className='bg-white border-accent-background'
                       >
                         <FaEdit />
                       </Button>
@@ -388,7 +386,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className=" bg-white text-red-600 hover:text-red-700"
                       >
                         <FaTrash />
                       </Button>
@@ -433,6 +431,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(`/blog/posts/${post.id}`, '_blank')}
+                        className='bg-white border-accent-background'
                       >
                         <FaEye />
                       </Button>
@@ -440,6 +439,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(`/admin/posts/${post.id}/edit`, '_blank')}
+                        className='bg-white border-accent-background'
                       >
                         <FaEdit />
                       </Button>
@@ -447,7 +447,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeletePost(post.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className=" bg-white text-red-600 hover:text-red-700"
                       >
                         <FaTrash />
                       </Button>
