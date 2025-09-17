@@ -11,6 +11,7 @@ import { FaTimes } from 'react-icons/fa';
 
 import { NewPostForm as NewPostFormType } from '@/types/forms';
 import { getUserCookie } from '@/lib/cookies';
+import router from 'next/router';
 
 const categories = [
   { name: 'React', href: '' },
@@ -32,7 +33,7 @@ interface NewPostFormProps {
 export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<NewPostFormType>();
+  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<NewPostFormType>();
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategory(categoryName);
@@ -53,7 +54,9 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
     console.log('User token:', token);
     const status = 'draft';
 
-    const newPost = await fetch( url, {
+    try {
+
+      const newPost = await fetch( url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,6 +67,26 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
     
     const resp = await newPost.json();
     console.log(resp);
+
+    if (resp && resp.id ) {
+   
+      alert('Post creado con exito')
+      
+      router.push('/blog');
+      return;
+    };
+
+    if (resp.message) {
+      alert(resp.message);
+    } else {
+      alert('Error al iniciar sesión. Inténtalo de nuevo.');
+    };
+
+    } catch (error) {
+      console.log({ error });
+      alert('Problemas con el servidor');
+    }
+    
     
   }
 
