@@ -11,7 +11,7 @@ import { LoginForm } from "@/types/forms";
 import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
 
-import devi from "../../../public/devi-hello.png";
+// Use image from `public/` via its public path
 
 const LoginPage = () => {
 
@@ -85,10 +85,10 @@ const LoginPage = () => {
       <div className=" flex flex-col sm:mx-auto sm:w-full sm:max-w-sm border-accent-background border-2 rounded-2xl mt-10 mb-10 justify-center items-center">
         <div className=" mt-10 w-50 pb-10">
           <Image
-            src={devi.src}
-            alt='Devi'
-            width={devi.width}
-            height={devi.height}
+            src="/devi-hello.png"
+            alt="Devi"
+            width={200}
+            height={200}
           />
         </div>
         <div className="flex justify-center text-2xl text-white pb-5">
@@ -141,7 +141,8 @@ const LoginPage = () => {
           <div className="flex text-white mb-10 justify-center items-center">
             <Button
               variant='outline'
-              className="justify-center items-center">
+              className="justify-center items-center"
+              onClick={() => window.location.href = 'https://codequest-backend-2025.onrender.com/api/v1/auth/discord/callback'}>
               Discord
             </Button>
           </div>
