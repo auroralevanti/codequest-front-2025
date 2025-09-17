@@ -2,15 +2,15 @@
 
 export interface UserData {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  role: 'admin' | 'user';
+  roles: 'admin' | 'user';
   avatar?: string;
   token?: string;
 }
 
 const COOKIE_NAME = 'user_data';
-const COOKIE_EXPIRES_DAYS = 7; // Cookie expires in 7 days
+const COOKIE_EXPIRES_DAYS = 7; 
 
 export const setUserCookie = (userData: UserData): void => {
   if (typeof window === 'undefined') return;
@@ -44,6 +44,15 @@ export const getUserCookie = (): UserData | null => {
   return null;
 };
 
+export const updateUserCookie = (updates: Partial<UserData>): boolean => {
+  const currentUser = getUserCookie();
+  if (!currentUser) return false;
+  
+  const updatedUser = { ...currentUser, ...updates };
+  setUserCookie(updatedUser);
+  return true;
+};
+
 export const removeUserCookie = (): void => {
   if (typeof window === 'undefined') return;
   
@@ -56,10 +65,49 @@ export const isUserLoggedIn = (): boolean => {
 
 export const getUserRole = (): 'admin' | 'user' | null => {
   const userData = getUserCookie();
-  return userData?.role || null;
+  return userData?.roles || null;
+};
+
+export const getUsername = (): string | null => {
+  const userData = getUserCookie();
+  return userData?.username || null;
+};
+
+export const getUserId = (): string | null => {
+  const userData = getUserCookie();
+  return userData?.id || null;
 };
 
 export const isAdmin = (): boolean => {
   return getUserRole() === 'admin';
 };
 
+export const isUser = (): boolean => {
+  return getUserRole() === 'user';
+};
+
+// Utility to check if user has specific role
+export const hasRole = (requiredRole: 'admin' | 'user'): boolean => {
+  return getUserRole() === requiredRole;
+};
+
+// Get user display info (useful for UI components)
+export const getUserDisplayInfo = (): { name: string; role: string; avatar?: string } | null => {
+  const userData = getUserCookie();
+  if (!userData) return null;
+  
+  return {
+    name: userData.username,
+    role: userData.roles,
+    avatar: userData.avatar
+  };
+};
+
+// Validate if cookie data structure is correct
+export const validateUserCookie = (): boolean => {
+  const userData = getUserCookie();
+  if (!userData) return false;
+  
+  const requiredFields = ['id', 'name', 'email', 'role'];
+  return requiredFields.every(field => userData[field as keyof UserData] !== undefined);
+};

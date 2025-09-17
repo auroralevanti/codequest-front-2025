@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import devi from "../../../public/devi-laptop.png";
+import devi from "../../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -30,7 +30,7 @@ export default function RegisterNewAdminPage() {
   console.log(username, email, password);
   const roles = 'admin';
   
-  const url = '';
+  const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/signup';
   
   try {
     
@@ -50,7 +50,7 @@ export default function RegisterNewAdminPage() {
     }; */
     if( resp ){
       alert('Bienvenido');
-      router.push('/blog')
+      router.push('/admin/dashboard')
     }
   
     if( resp.message === "Invalid password" ){
@@ -82,13 +82,13 @@ export default function RegisterNewAdminPage() {
             height={devi.height}
           />
         </div>
-        <div className="flex justify-center text-2xl text-white pb-5">
-          <h3 className="text-center"><b>Registro a blog de la comunidad DevTalles</b></h3>
+        <div className="flex justify-center text-2xl text-background pb-5">
+          <h3 className="text-center"><b>Registro exclusivo de ususario administrador a la comunidad DevTalles</b></h3>
         </div>
         <div>
           <form onSubmit={handleSubmit(submitLogin)}>
             <Input
-              className="text-white mt-2"
+              className="text-black mt-2"
               placeholder="Nombre de Usuario"
               {...register('username', { 
                 required: 'Campo obligatorio',
@@ -101,7 +101,7 @@ export default function RegisterNewAdminPage() {
             </Input>
             {errors.username && ( <p className="text-red-500 text-sm mt-1">{errors.username.message}</p> )}
             <Input
-              className="text-white mt-2"
+              className="text-black mt-2"
               placeholder="Correo Electronico"
               {...register('email', { 
                 required: 'Campo obligatorio',
@@ -114,7 +114,7 @@ export default function RegisterNewAdminPage() {
             </Input>
             {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p> )}
             <Input
-              className="text-white mt-2 w-<70>"
+              className="text-black mt-2 w-<70>"
               placeholder="Contraseña"
               type='password'
               {...register('password', {
@@ -138,7 +138,7 @@ export default function RegisterNewAdminPage() {
             </div>
           </form>
           <div className="flex flex-row mb-10 text-center">
-              <p className="text-accent-background font-bold ">Forma parte de nuestro blog exclusivo</p>
+              <p className="text-background font-bold ">Ser usuario admin es una responsabilidad</p>
           </div>
 
         </div>

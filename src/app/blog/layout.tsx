@@ -63,7 +63,7 @@ export default function DashboardLayout({
               </div>
               <button
                 onClick={() => setIsPostModalOpen(true)}
-                className="text-white hover:text-gray-300 transition-colors p-2 rounded-full hover:bg-white hover:bg-opacity-10"
+                className="text-white hover:text-black transition-colors p-2 rounded-full hover:bg-accent-background k hover:bg-opacity-10"
                 title="Crear nuevo post"
               >
                 <MdPostAdd size={24} />

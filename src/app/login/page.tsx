@@ -42,9 +42,9 @@ const LoginPage = () => {
    
         setUserCookie({
           id: resp.user.id,
-          name: resp.user.name,
+          username: resp.user.username,
           email: resp.user.email,
-          role: resp.user.role,
+          roles: resp.user.roles,
           avatar: resp.user.avatar,
           token: resp.token
         });

@@ -33,6 +33,8 @@ interface NewPostFormProps {
 export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [closeForm, setCloseForm] = useState(false);
+
   const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<NewPostFormType>();
 
   const handleCategorySelect = (categoryName: string) => {
@@ -70,9 +72,9 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
 
     if (resp && resp.id ) {
    
-      alert('Post creado con exito')
-      
-      router.push('/blog');
+      alert('Post creado con exito');
+      reset();
+      onCancel;
       return;
     };
 

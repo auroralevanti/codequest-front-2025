@@ -1,67 +1,123 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@radix-ui/react-separator';
-import { 
-  FaUsers, 
-  FaFileAlt, 
-  FaTrash, 
-  FaEdit, 
-  FaPlus, 
-  FaSearch,
-  FaUserPlus,
-  FaEye,
-  FaUserShield
-} from 'react-icons/fa';
-import { getUserCookie } from '@/lib/cookies';
-import Link from 'next/link';
+import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaPlus, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
+import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('users');
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
-  const [newAdminData, setNewAdminData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    avatarUrl: ''
-  });
+  const [newAdminData, setNewAdminData] = useState();
 
-  // Get admin token
-  const userData = getUserCookie();
+  // Authentication check
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      // Ensure we're on the client side
+      if (typeof window === 'undefined') return;
+      
+      setAuthLoading(true);
+      
+      // Debug: Log cookie data
+      const userData = getUserCookie();
+      console.log('=== DEBUG ADMIN ACCESS ===');
+      console.log('User Data from Cookie:', userData);
+      console.log('User Role:', userData?.roles);
+      console.log('Is User Logged In:', isUserLoggedIn());
+      console.log('Is Admin:', isAdmin());
+      console.log('========================');
+      
+      // Check if user is logged in
+      if (!isUserLoggedIn()) {
+        console.log('User not logged in, redirecting to login');
+        router.push('/login');
+        return;
+      }
+
+      // Check if user is admin
+      if (!isAdmin()) {
+        console.log('User is not admin, redirecting to home');
+        router.push('/'); // Redirect to home or show unauthorized page
+        return;
+      }
+
+      console.log('Admin access granted');
+      setIsAuthorized(true);
+      setAuthLoading(false);
+    };
+
+    checkAdminAccess();
+  }, [router]);
+
+  // Get user data for display (only when authorized)
+  const userData = isAuthorized ? getUserCookie() : null;
+  const username = userData?.username;
   const token = userData?.token;
+  console.log('admin token: ', token)
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Only fetch data if auth check is complete and user is authorized
+    if (!authLoading && isAuthorized) {
+      fetchData();
+    }
+  }, [authLoading, isAuthorized]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      // Fetch users
-      const usersResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/users', {
+     console.log('token de admin: ', token)
+      
+      // Verify token is available
+      if (!token) {
+        console.error('No admin token available');
+        router.push('/login');
+        return;
+      }
+
+      const usersResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/users?limit=10&offset=0', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (usersResponse.status === 401 || usersResponse.status === 403) {
+        console.error('Unauthorized access');
+        router.push('/login');
+        return;
+      }
+
       const usersData = await usersResponse.json();
+      console.log('Usuarios: ', usersData);
       setUsers(usersData || []);
 
       // Fetch posts
-      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts', {
+      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts?limit=10&offset=0&search=javascript&status=published&authorId=uuid-author-id&categoryId=uuid-category-id&tagId=uuid-tag-id&publishedAfter=2024-01-01T00%3A00%3A00.000Z&publishedBefore=2024-12-31T23%3A59%3A59.999', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (postsResponse.status === 401 || postsResponse.status === 403) {
+        console.error('Unauthorized access');
+        router.push('/login');
+        return;
+      }
+
       const postsData = await postsResponse.json();
+      console.log('Posts:', postsData);
       setPosts(postsData || []);
 
     } catch (error) {
@@ -74,16 +130,27 @@ export default function AdminDashboardPage() {
   const handleDeleteUser = async (userId: any) => {
     if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
+        const userData = getUserCookie();
+        const token = userData?.token;
+        
         const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/users/${userId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+
+        if (response.status === 401 || response.status === 403) {
+          alert('No tienes permisos para realizar esta acción');
+          router.push('/login');
+          return;
+        }
         
         if (response.ok) {
           setUsers(users.filter(user => user.id !== userId));
           alert('Usuario eliminado correctamente');
+        } else {
+          alert('Error al eliminar usuario');
         }
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -95,52 +162,32 @@ export default function AdminDashboardPage() {
   const handleDeletePost = async (postId: any) => {
     if (confirm('¿Estás seguro de que quieres eliminar este post?')) {
       try {
+        const userData = getUserCookie();
+        const token = userData?.token;
+        
         const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/posts/${postId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+
+        if (response.status === 401 || response.status === 403) {
+          alert('No tienes permisos para realizar esta acción');
+          router.push('/login');
+          return;
+        }
         
         if (response.ok) {
           setPosts(posts.filter(post => post.id !== postId));
           alert('Post eliminado correctamente');
+        } else {
+          alert('Error al eliminar post');
         }
       } catch (error) {
         console.error('Error deleting post:', error);
         alert('Error al eliminar post');
       }
-    }
-  };
-
-  const handleCreateAdmin = async (e: any) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('https://codequest-backend-2025.onrender.com/api/v1/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...newAdminData,
-          roles: 'admin'
-        })
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        alert('Admin creado correctamente');
-        setNewAdminData({ username: '', email: '', password: '', avatarUrl: '' });
-        setShowCreateAdmin(false);
-        fetchData(); // Refresh data
-      } else {
-        alert('Error al crear admin: ' + (result.message || 'Error desconocido'));
-      }
-    } catch (error) {
-      console.error('Error creating admin:', error);
-      alert('Error al crear admin');
     }
   };
 
@@ -154,12 +201,42 @@ export default function AdminDashboardPage() {
     post.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <FaLock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando permisos de administrador...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show unauthorized message if not admin (this shouldn't render due to redirect)
+  if (!authLoading && !isAuthorized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <FaLock className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h1>
+          <p className="text-gray-600 mb-4">No tienes permisos para acceder a esta página</p>
+          <Button onClick={() => router.push('/')}>
+            Volver al Inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while fetching data
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos...</p>
+          <p className="mt-4 text-gray-600">Cargando datos del dashboard...</p>
         </div>
       </div>
     );
@@ -170,8 +247,16 @@ export default function AdminDashboardPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel de Administración</h1>
-          <p className="text-gray-600">Gestiona usuarios, posts y configuración del sistema</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard de Administrador</h1>
+              <p className="text-gray-600">Gestiona usuarios, posts y configuración del sistema</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaUserShield className="h-6 w-6 text-purple-600" />
+              <span className="text-sm text-gray-600">Bienvenido, {userData?.username || 'Admin'}</span>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -310,6 +395,11 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
+                {filteredUsers.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No se encontraron usuarios
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -364,86 +454,14 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
+                {filteredPosts.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No se encontraron posts
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Create Admin Modal */}
-        {showCreateAdmin && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FaUserPlus />
-                  Crear Nuevo Admin
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateAdmin} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre de Usuario
-                    </label>
-                    <Input
-                      type="text"
-                      value={newAdminData.username}
-                      onChange={(e) => setNewAdminData({...newAdminData, username: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <Input
-                      type="email"
-                      value={newAdminData.email}
-                      onChange={(e) => setNewAdminData({...newAdminData, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Contraseña
-                    </label>
-                    <Input
-                      type="password"
-                      value={newAdminData.password}
-                      onChange={(e) => setNewAdminData({...newAdminData, password: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Avatar URL (Opcional)
-                    </label>
-                    <Input
-                      type="url"
-                      value={newAdminData.avatarUrl}
-                      onChange={(e) => setNewAdminData({...newAdminData, avatarUrl: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" className="flex-1">
-                      Crear Admin
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setShowCreateAdmin(false)}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
         )}
       </div>
     </div>
