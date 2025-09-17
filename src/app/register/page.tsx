@@ -10,6 +10,7 @@ import devi from "../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@radix-ui/react-separator";
+import { setUserCookie } from "@/lib/cookies";
 
 
 interface LoginForm {
@@ -31,7 +32,7 @@ export default function RegisterNewUserPage() {
   console.log(username, email, password);
   const roles = 'user';
   
-  const url = '';
+  const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/signup';
   
   try {
     
@@ -46,22 +47,40 @@ export default function RegisterNewUserPage() {
     const resp = await toLogin.json();
     console.log(resp);
   
-  /*    if( resp.status === 401 ){
-      alert('Error en email o password');
-    }; */
-    if( resp ){
-      router.push('/blog')
-    }
-  
-    if( resp.message === "Invalid password" ){
-      reset()
-      alert('Password incorrecto')
+    if (resp && resp.user && resp.token) {
+   
+      setUserCookie({
+        id: resp.user.id,
+        name: resp.user.name,
+        email: resp.user.email,
+        role: resp.user.role,
+        avatar: resp.user.avatar,
+        token: resp.token
+      });
+      
+      console.log('User data saved to cookies:', resp.user);
+      router.push('/blog');
+      return;
     };
-  
-    if( resp.message[0] === "password must be longer than or equal to 6 characters" ){
-      reset()
-      alert('Password debe contener al menos 6 caracteres')
-    }
+
+    if (resp.message === "Invalid password") {
+      reset();
+      alert('Password incorrecto');
+      return;
+    };
+
+    if (Array.isArray(resp.message) && resp.message[0] === "password must be longer than or equal to 6 characters") {
+      reset();
+      alert('Password debe contener al menos 6 caracteres');
+      return;
+    };
+
+    if (resp.message) {
+      alert(resp.message);
+    } else {
+      alert('Error al iniciar sesión. Inténtalo de nuevo.');
+    };
+
   
   
   } catch (error) {

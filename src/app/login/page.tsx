@@ -1,23 +1,19 @@
 'use client'
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-
-import devi from "../../../public/devi-hello.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LoginForm } from "@/types/forms";
 import { Separator } from "@radix-ui/react-separator";
-import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
+import { setUserCookie } from "@/lib/cookies";
 
+import devi from "../../../public/devi-hello.png";
 
-interface LoginForm {
-  email: string;
-  password: string;
-};
-
-export default function LoginPage() {
+const LoginPage = () => {
 
   const router = useRouter();
 
@@ -30,40 +26,57 @@ export default function LoginPage() {
     const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/login';
 
     try {
-      
-      const toLogin = await fetch( url, {
+
+      const toLogin = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-type': 'application/json'
         },
-        body: JSON.stringify({email, password})
+        body: JSON.stringify({ email, password })
       });
 
       const resp = await toLogin.json();
       console.log(resp);
-
-   /*    if( resp.status === 401 ){
-        alert('Error en email o password');
-      }; */
-      if( resp ){
-        router.push('/blog')
-      }
-
-      if( resp.message === "Invalid password" ){
-        reset()
-        alert('Password incorrecto')
+      
+      if (resp && resp.user && resp.token) {
+   
+        setUserCookie({
+          id: resp.user.id,
+          name: resp.user.name,
+          email: resp.user.email,
+          role: resp.user.role,
+          avatar: resp.user.avatar,
+          token: resp.token
+        });
+        
+        console.log('User data saved to cookies:', resp.user);
+        router.push('/blog');
+        return;
       };
 
-      if( resp.message[0] === "password must be longer than or equal to 6 characters" ){
-        reset()
-        alert('Password debe contener al menos 6 caracteres')
-      }
+      if (resp.message === "Invalid password") {
+        reset();
+        alert('Password incorrecto');
+        return;
+      };
+
+      if (Array.isArray(resp.message) && resp.message[0] === "password must be longer than or equal to 6 characters") {
+        reset();
+        alert('Password debe contener al menos 6 caracteres');
+        return;
+      };
+
+      if (resp.message) {
+        alert(resp.message);
+      } else {
+        alert('Error al iniciar sesión. Inténtalo de nuevo.');
+      };
 
 
     } catch (error) {
-      console.log({error});
+      console.log({ error });
       alert('Problemas con el servidor');
-    }
+    };
 
   };
 
@@ -86,16 +99,16 @@ export default function LoginPage() {
             <Input
               className="text-white mt-2"
               placeholder="Correo Electronico"
-              {...register('email', { 
+              {...register('email', {
                 required: 'Campo obligatorio',
                 pattern: {
                   value: /^\S+@\S+$/i,
                   message: 'El correo no es válido'
-                } 
+                }
               })}
             >
             </Input>
-            {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p> )}
+            {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
             <Input
               className="text-white mt-2 w-<70>"
               placeholder="Contraseña"
@@ -104,16 +117,16 @@ export default function LoginPage() {
                 required: 'Campo obligatorio',
                 minLength: {
                   value: 6,
-                  message: 'La contraseña debe tener al menos 6 caracteres' 
+                  message: 'La contraseña debe tener al menos 6 caracteres'
                 }
-               })}
+              })}
             >
             </Input>
-            { errors.password && (<p className="text-red-500 text-sm mt-1">{errors.password.message}</p>) }
+            {errors.password && (<p className="text-red-500 text-sm mt-1">{errors.password.message}</p>)}
             <div className="flex justify-center">
-              <Button 
-              className="bg-accent-background mt-5 mb-5"
-              type='submit'
+              <Button
+                className="bg-accent-background mt-5 mb-5"
+                type='submit'
               >
                 Ingreso
               </Button>
@@ -122,13 +135,13 @@ export default function LoginPage() {
           </form>
           <div className="flex items-center mb-5">
             <Separator className="flex-grow border-gray-300 border-1 mr-1" />
-              <span className="text-white">&nbsp; o continua con &nbsp;</span>
+            <span className="text-white">&nbsp; o continua con &nbsp;</span>
             <Separator className="flex-grow border-gray-300 border-1 ml-1" />
           </div>
           <div className="text-white mb-10 justify-center items-center">
-            <Button 
-            variant='outline'
-            className="justify-center items-center">
+            <Button
+              variant='outline'
+              className="justify-center items-center">
               Discord
             </Button>
           </div>
@@ -142,4 +155,7 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage
+

@@ -1,11 +1,17 @@
 // https://tailwindcomponents.com/component/tailwind-css-admin-dashboard-layout
 // https://gist.github.com/Klerith/3949f1c8b884d7101e378dfb668f0f3a
 
+'use client';
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 import { MdPostAdd } from "react-icons/md";
 import { AvatarComponent } from "./components/avatar/Avatar";
+import { PostModal } from "./components/post/PostModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { NewPostForm } from "@/types/forms";
 
 import logoDevTalles from "../../../public/LOGOB.svg";
 
@@ -16,6 +22,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleCreatePost = (data: NewPostForm) => {
+    // Here you would typically send the data to your API
+    console.log('New post created:', data);
+    setIsPostModalOpen(false);
+    // You might want to refresh the posts list or add the new post to the state
+  };
+
   return (
     <>
     <div className="bg-background">
@@ -40,12 +56,25 @@ export default function DashboardLayout({
                     <b>DevTalles Blog de usuarios</b>
                   </span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
               {/* User Avatar */}
-              <div className=" text-white p-2 rounded-full w-12 h-12 flex items-center justify-center">
+              <div className="text-white p-2 rounded-full w-12 h-12 flex items-center justify-center">
                 <AvatarComponent />
               </div>
-                <MdPostAdd color="white" size={20} />
+              <button
+                onClick={() => setIsPostModalOpen(true)}
+                className="text-white hover:text-gray-300 transition-colors p-2 rounded-full hover:bg-white hover:bg-opacity-10"
+                title="Crear nuevo post"
+              >
+                <MdPostAdd size={24} />
+              </button>
+              <button
+                onClick={logout}
+                className="text-white hover:text-red-300 transition-colors px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-md"
+                title="Cerrar sesión"
+              >
+                Salir
+              </button>
             </div>
           </div>
         </div>
@@ -106,6 +135,14 @@ export default function DashboardLayout({
         </div>
      {/*  </div> */}
       </div>
+      
+      {/* Post Modal */}
+      <PostModal
+        isOpen={isPostModalOpen}
+        onClose={() => setIsPostModalOpen(false)}
+        onSubmit={handleCreatePost}
+        currentUser={user?.name || 'Usuario'}
+      />
     </>
   );
 }
