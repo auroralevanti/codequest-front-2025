@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,44 @@ import { setUserCookie } from "@/lib/cookies";
 const LoginPage = () => {
 
   const router = useRouter();
+
+  // If backend redirected here with ?token=..., capture it, store cookie and redirect
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const error = params.get('error');
+
+    if (error === 'discord_auth_failed') {
+      alert('Error en la autenticación con Discord. Por favor, intenta de nuevo.');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (token) {
+      const userId = params.get('userId');
+      const username = params.get('username');
+      const email = params.get('email');
+      const avatar = params.get('avatar');
+      const role = params.get('role');
+
+      // Save user data if available, otherwise save minimal data
+      setUserCookie({
+        id: userId || '',
+        username: username || '',
+        name: username || '',
+        email: email || '',
+        roles: (role as 'admin' | 'user') || 'user',
+        role: (role as 'admin' | 'user') || 'user',
+        avatar: avatar || undefined,
+        token
+      });
+      
+      // Redirect to blog
+      router.push('/blog');
+    }
+  }, [router]);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginForm>();
 
@@ -43,8 +82,10 @@ const LoginPage = () => {
         setUserCookie({
           id: resp.user.id,
           username: resp.user.username,
+          name: resp.user.name || resp.user.username,
           email: resp.user.email,
           roles: resp.user.roles,
+          role: resp.user.role || resp.user.roles,
           avatar: resp.user.avatar,
           token: resp.token
         });
@@ -142,7 +183,7 @@ const LoginPage = () => {
             <Button
               variant='outline'
               className="justify-center items-center"
-              onClick={() => window.location.href = 'https://codequest-backend-2025.onrender.com/api/v1/auth/discord/callback'}>
+              onClick={() => window.location.href = 'https://codequest-backend-2025.onrender.com/api/v1/auth/discord'}>
               Discord
             </Button>
           </div>
