@@ -12,6 +12,7 @@ import { FaTimes } from 'react-icons/fa';
 import { NewPostForm as NewPostFormType } from '@/types/forms';
 import { getUserCookie } from '@/lib/cookies';
 import router from 'next/router';
+import { apiUrls } from '@/config/api';
 
 const categories = [
   { name: 'React', href: '' },
@@ -48,7 +49,7 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
       return;
     };
     
-    const url = 'https://codequest-backend-2025.onrender.com/api/v1/posts';
+    const url = apiUrls.posts.create();
     console.log(title, content, slug, category, tagIds);
     
     const userData = getUserCookie();

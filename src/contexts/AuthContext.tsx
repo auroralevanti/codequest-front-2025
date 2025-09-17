@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { LoginForm } from '@/types/forms';
 import { getUserCookie, removeUserCookie, setUserCookie, UserData } from '@/lib/cookies';
+import { apiUrls } from '@/config/api';
 
 // Simple user interface
 interface User {
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoading(true);
       setError(null);
 
-      const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/login';
+      const url = apiUrls.auth.login();
       const response = await fetch(url, {
         method: 'POST',
         headers: {

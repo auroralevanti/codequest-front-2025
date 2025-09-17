@@ -9,6 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import devi from "../../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { apiUrls } from "@/config/api";
 
 
 interface LoginForm {
@@ -30,7 +31,7 @@ export default function RegisterNewAdminPage() {
   console.log(username, email, password);
   const roles = 'admin';
   
-  const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/signup';
+  const url = apiUrls.auth.signup();
   
   try {
     

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@radix-ui/react-separator';
 import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaPlus, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
 import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
+import { apiUrls } from '@/config/api';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -86,7 +87,7 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      const usersResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/users?limit=10&offset=0', {
+      const usersResponse = await fetch(apiUrls.users.list(10, 0), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -103,7 +104,7 @@ export default function AdminDashboardPage() {
       setUsers(usersData || []);
 
       // Fetch posts
-      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts', {
+      const postsResponse = await fetch(apiUrls.posts.list(), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -136,7 +137,7 @@ export default function AdminDashboardPage() {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/users/${userId}`, {
+        const response = await fetch(apiUrls.users.byId(userId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -168,7 +169,7 @@ export default function AdminDashboardPage() {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/posts/${postId}`, {
+        const response = await fetch(apiUrls.posts.byId(postId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`

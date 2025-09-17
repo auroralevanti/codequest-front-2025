@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/types/forms";
 import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
+import { apiUrls } from "@/config/api";
 
 // Use image from `public/` via its public path
 
@@ -62,7 +63,7 @@ const LoginPage = () => {
   const submitLogin: SubmitHandler<LoginForm> = async ({ email, password }: LoginForm) => {
     console.log(email, password);
 
-    const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/login';
+    const url = apiUrls.auth.login();
 
     try {
 
@@ -183,7 +184,7 @@ const LoginPage = () => {
             <Button
               variant='outline'
               className="justify-center items-center"
-              onClick={() => window.location.href = 'https://codequest-backend-2025.onrender.com/api/v1/auth/discord'}>
+              onClick={() => window.location.href = apiUrls.auth.discord()}>
               Discord
             </Button>
           </div>

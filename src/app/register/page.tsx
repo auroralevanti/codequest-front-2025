@@ -11,28 +11,28 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
+import { LoginForm } from "@/types/forms";
+import { apiUrls } from "@/config/api";
 
-
-interface LoginForm {
-  username: string,
+interface RegisterForm {
+  username: string;
   email: string;
   password: string;
   avatarUrl?: string;
-  roles: string
-};
-
+  roles?: string;
+}
 
 export default function RegisterNewUserPage() {
   const router = useRouter();
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginForm>();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<RegisterForm>();
   
   
-  const submitLogin: SubmitHandler<LoginForm> = async ({ username, email, password }: LoginForm) => {
+  const submitLogin: SubmitHandler<RegisterForm> = async ({ username, email, password }: RegisterForm) => {
   console.log(username, email, password);
   const roles = 'user';
   
-  const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/signup';
+  const url = apiUrls.auth.signup();
   
   try {
     

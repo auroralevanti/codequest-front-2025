@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { setUserCookie } from '@/lib/cookies';
+import { apiUrls } from '@/config/api';
 
 export default function DiscordSuccessPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function DiscordSuccessPage() {
 
         // Fetch user data using the token
         try {
-          const response = await fetch('https://codequest-backend-2025.onrender.com/api/v1/users/me', {
+          const response = await fetch(apiUrls.users.me(), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
