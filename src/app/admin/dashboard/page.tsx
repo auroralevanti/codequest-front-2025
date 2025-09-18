@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
       
       setAuthLoading(true);
   
-      const userData = getUserCookie();
+      //const userData = getUserCookie();
 
     /*console.log('User Data from Cookie:', userData);
       console.log('User Role:', userData?.roles);

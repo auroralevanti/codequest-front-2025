@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { FaHome, FaUsers, FaFileAlt, FaCog, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
 import { getUserCookie, removeUserCookie, isAdmin } from '@/lib/cookies';
 
 import { AvatarComponent } from '../blog/components/avatar/Avatar';
+import { UserData } from '@/types/api';
 
 export default function AdminLayout({
   children,
@@ -18,7 +19,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const router = useRouter();
 
 
