@@ -21,7 +21,7 @@ export default function AdminLayout({
   const [userData, setUserData] = useState<any>(null);
   const router = useRouter();
 
-  // Check authorization on client side only
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -34,7 +34,7 @@ export default function AdminLayout({
       setAuthLoading(false);
       
       if (!userIsAdmin) {
-        router.push('/login');
+        router.push('/admin');
       }
     };
 
@@ -43,10 +43,9 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     removeUserCookie();
-    router.push('/login');
+    router.push('/admin');
   };
-
-  // Show loading while checking auth
+ 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -58,7 +57,6 @@ export default function AdminLayout({
     );
   }
 
-  // Show unauthorized if not admin
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -78,7 +76,7 @@ export default function AdminLayout({
     { name: 'Dashboard', href: '/admin/dashboard', icon: FaHome },
     { name: 'Usuarios', href: '/admin/users', icon: FaUsers },
     { name: 'Posts', href: '/admin/posts', icon: FaFileAlt },
-    { name: 'Configuración', href: '/admin/settings', icon: FaCog },
+    //{ name: 'Configuración', href: '/admin/settings', icon: FaCog },
   ];
 
   return (
