@@ -27,15 +27,17 @@ const mockComments = [
 
 export default function BlogPage() {
   return (
-    <div className="max-w-md mx-auto py-8">
-      <div className="mb-6">
-        <CategoriesBadge />
-      </div>
+    <div className="min-h-screen bg-white dark:bg-background-dark text-text-light dark:text-text-dark">
+      <div className="max-w-md mx-auto py-8">
+        <div className="mb-6">
+          <CategoriesBadge />
+        </div>
 
-      <PostCard user={mockPost.user} createdAt={mockPost.createdAt} body={mockPost.body} images={mockPost.images} likes={mockPost.likes} comments={mockPost.comments} />
+        <PostCard user={mockPost.user} createdAt={mockPost.createdAt} body={mockPost.body} images={mockPost.images} likes={mockPost.likes} comments={mockPost.comments} />
 
-      <div className="mt-6">
-        <CommentList items={mockComments} />
+        <div className="mt-6">
+          <CommentList items={mockComments} />
+        </div>
       </div>
     </div>
   );
