@@ -1,59 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@radix-ui/react-separator';
-import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaPlus, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
+import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
 import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
+import { UserData, PostData } from '@/types/api';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('users');
-  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
-  const [newAdminData, setNewAdminData] = useState();
 
-  // Authentication check
+
   useEffect(() => {
     const checkAdminAccess = async () => {
-      // Ensure we're on the client side
+
       if (typeof window === 'undefined') return;
       
       setAuthLoading(true);
-      
-      // Debug: Log cookie data
+  
       const userData = getUserCookie();
-      console.log('=== DEBUG ADMIN ACCESS ===');
-      console.log('User Data from Cookie:', userData);
+
+    /*console.log('User Data from Cookie:', userData);
       console.log('User Role:', userData?.roles);
       console.log('Is User Logged In:', isUserLoggedIn());
-      console.log('Is Admin:', isAdmin());
-      console.log('========================');
-      
-      // Check if user is logged in
+      console.log('Is Admin:', isAdmin()); */
+ 
       if (!isUserLoggedIn()) {
-        console.log('User not logged in, redirecting to login');
-        router.push('/login');
+        console.log('Usuario debe de iniciar sesion');
+        router.push('/admin');
         return;
       }
 
-      // Check if user is admin
+
       if (!isAdmin()) {
-        console.log('User is not admin, redirecting to home');
-        router.push('/'); // Redirect to home or show unauthorized page
+        console.log('Usuario no es admin');
+        router.push('/login'); 
         return;
       }
 
-      console.log('Admin access granted');
+      console.log('Acceso exitoso');
       setIsAuthorized(true);
       setAuthLoading(false);
     };
@@ -61,24 +56,16 @@ export default function AdminDashboardPage() {
     checkAdminAccess();
   }, [router]);
 
-  // Get user data for display (only when authorized)
+ 
   const userData = isAuthorized ? getUserCookie() : null;
-  const username = userData?.username;
   const token = userData?.token;
-  console.log('admin token: ', token)
+  console.log('admin token: ', token);
 
-  useEffect(() => {
-    // Only fetch data if auth check is complete and user is authorized
-    if (!authLoading && isAuthorized) {
-      fetchData();
-    }
-  }, [authLoading, isAuthorized]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       
-     console.log('token de admin: ', token)
+      console.log('token de admin: ', token);
       
       if (!token) {
         console.error('No admin token available');
@@ -99,17 +86,14 @@ export default function AdminDashboardPage() {
       }
 
       const usersData = await usersResponse.json();
-      //console.log('Usuarios: ', usersData);
-      setUsers(usersData || []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
 
-      // Fetch posts
       const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      
       if (postsResponse.status === 401 || postsResponse.status === 403) {
         console.error('Unauthorized access');
         alert('Acceso no permitido');
@@ -119,8 +103,8 @@ export default function AdminDashboardPage() {
       const postsData = await postsResponse.json();
       console.log('Posts:', postsData);
       const post = postsData.posts;
-      console.log('Posts como objetos: ', post)
-      setPosts(post || []);
+      console.log('Posts como objetos: ', post);
+      setPosts(Array.isArray(post) ? post : []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -128,9 +112,16 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, router]);
 
-  const handleDeleteUser = async (userId: any) => {
+  useEffect(() => {
+
+    if (!authLoading && isAuthorized) {
+      fetchData();
+    }
+  }, [authLoading, isAuthorized, fetchData]);
+
+  const handleDeleteUser = async (userId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
         const userData = getUserCookie();
@@ -162,7 +153,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleDeletePost = async (postId: any) => {
+  const handleDeletePost = async (postId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este post?')) {
       try {
         const userData = getUserCookie();
@@ -194,15 +185,15 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = Array.isArray(users) ? users.filter((user: UserData) => 
     user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
-  const filteredPosts = posts.filter(post => 
+  const filteredPosts = Array.isArray(posts) ? posts.filter((post: PostData) => 
     post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.content?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (authLoading) {
     return (
@@ -329,7 +320,7 @@ export default function AdminDashboardPage() {
               </Button>
               <Button
                 onClick={() => router.push('/admin/register')}
-                className="flex items-center gap-2 bg-accent-background "
+                className="flex items-center gap-2 bg-accent-background"
               >
                 <FaUserPlus />
                 Crear Admin
@@ -386,7 +377,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteUser(user.id)}
-                        className=" bg-white text-red-600 hover:text-red-700"
+                        className="bg-white text-red-600 hover:text-red-700"
                       >
                         <FaTrash />
                       </Button>
@@ -447,7 +438,7 @@ export default function AdminDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeletePost(post.id)}
-                        className=" bg-white text-red-600 hover:text-red-700"
+                        className="bg-white text-red-600 hover:text-red-700"
                       >
                         <FaTrash />
                       </Button>
