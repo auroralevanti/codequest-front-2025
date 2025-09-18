@@ -12,7 +12,11 @@ const mockPost = {
   body: 'Hola DeviHola DeviHola DeviHola DeviHola DeviHola Devi',
   images: [
     'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg',
+    'https://media.licdn.com/dms/image/D4E22AQERqd-FCUZA0g/feedshare-shrink_2048_1536/0/1707582515866?e=2147483647&v=beta&t=ovFCGyNnPYduDuADvD2J5q5V5E44ZTHqZe_9OqeGpv4',
+    'https://media.licdn.com/dms/image/v2/D5622AQHYxabjRY81fA/feedshare-shrink_2048_1536/feedshare-shrink_2048_1536/0/1711552820275?e=2147483647&v=beta&t=yqN7G8-2Bcu1O-LY1ipW5NQ3ipa1eKAwjmmwDDEEjJE',
     'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg',
+    'https://media.licdn.com/dms/image/D4E22AQERqd-FCUZA0g/feedshare-shrink_2048_1536/0/1707582515866?e=2147483647&v=beta&t=ovFCGyNnPYduDuADvD2J5q5V5E44ZTHqZe_9OqeGpv4',
+    'https://media.licdn.com/dms/image/v2/D5622AQHYxabjRY81fA/feedshare-shrink_2048_1536/feedshare-shrink_2048_1536/0/1711552820275?e=2147483647&v=beta&t=yqN7G8-2Bcu1O-LY1ipW5NQ3ipa1eKAwjmmwDDEEjJE',
     'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg',
   ],
   likes: 220000,
