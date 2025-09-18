@@ -14,8 +14,8 @@ export default function FannedImages({ images = [], size = { width: 150, height:
   return (
     <div className="flex justify-center items-center" style={{ height: `${size.height + 10}px` }}>
       {imgs.map((src, i) => {
-        const common = `object-cover rounded-xl border-4 transition-transform duration-300 shadow-lg`;
-        const borderClass = `border-background-light dark:border-background-dark`;
+  const common = `object-cover rounded-xl border-4 transition-transform duration-300 shadow-lg`;
+  const borderClass = `border-background-light dark:border-background-dark`;
         const style: React.CSSProperties = {
           width: `${size.width}px`,
           height: `${size.height}px`,

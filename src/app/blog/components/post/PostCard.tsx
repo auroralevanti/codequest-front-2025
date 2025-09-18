@@ -16,7 +16,7 @@ type Props = {
 
 export default function PostCard({ user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
   return (
-  <article className="bg-white dark:bg-background-dark p-4 rounded-lg shadow-sm">
+  <article className="bg-background-light dark:bg-background-dark p-4 rounded-lg shadow-sm">
       <header className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <img src={user.avatarUrl} alt={user.username} className="w-12 h-12 rounded-full mr-3 object-cover" />
