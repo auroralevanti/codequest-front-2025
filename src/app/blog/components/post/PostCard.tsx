@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import FannedImages from './FannedImages';
 import CommentList from '../comment/CommentList';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
 
 type User = { id: string; username: string; avatarUrl?: string };
@@ -23,12 +24,19 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: any
 }
 
 export default function PostCard({ user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
+  const mockComments = [
+    { id: 'c1', user: { id: 'u2', username: 'James Dias', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Hola Devi', createdAt: '12h ago' },
+    { id: 'c2', user: { id: 'u3', username: 'Tiana Bergson', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Nice post!', createdAt: '19h ago' },
+    { id: 'c3', user: { id: 'u4', username: 'Kadin Bator', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Great pictures', createdAt: 'Yesterday' },
+  ];
+    
   const [showComments, setShowComments] = useState(false);
+  const commentsRef = React.useRef<HTMLDivElement | null>(null);
   return (
     <div className="bg-background-light dark:bg-background-dark p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
-          <img alt={`${user.username} profile`} src={user.avatarUrl} className="w-12 h-12 rounded-full mr-3" />
+          <img alt={`${user.username} profile`} src={user.avatarUrl || undefined} className="w-12 h-12 rounded-full mr-3" />
           <div>
             <p className="font-bold text-text-light dark:text-text-dark">{user.username}</p>
             <p className="text-sm text-secondary-light dark:text-secondary-dark">{createdAt}</p>
@@ -51,21 +59,26 @@ export default function PostCard({ user, createdAt, body, images = [], likes = 0
         />
       </div>
 
-      {/* Collapsible comments area */}
+      {/* Collapsible comments area (framer-motion) */}
       <div className="mt-4">
-        <div
-          className="overflow-hidden transition-[max-height,opacity] duration-300"
-          style={{ maxHeight: showComments ? 400 : 0, opacity: showComments ? 1 : 0 }}
-        >
+        <AnimatePresence initial={false}>
           {showComments && (
-            <CommentList
-              items={[
-                { id: 'c1', user: { id: 'u1', username: 'Devi', avatarUrl: '' }, body: 'Nice post!', createdAt: '2h' },
-                { id: 'c2', user: { id: 'u2', username: 'Alex', avatarUrl: '' }, body: 'Great photos.', createdAt: '1h' },
-              ]}
-            />
+            <motion.div
+              key="comments"
+              initial={{ opacity: 0, height: 0, translateY: -8 }}
+              animate={{ opacity: 1, height: 'auto', translateY: 0 }}
+              exit={{ opacity: 0, height: 0, translateY: -8 }}
+              transition={{ duration: 0.28, ease: [0.2, 0.9, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+              <div ref={commentsRef}>
+                <CommentList
+                  items={mockComments}
+                />
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   );

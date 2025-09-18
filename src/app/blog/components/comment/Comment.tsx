@@ -14,7 +14,7 @@ type Props = {
 export default function Comment({ user, body, createdAt }: Props) {
   return (
     <div className="flex">
-      <img alt={`${user?.username} profile`} className="w-10 h-10 rounded-full mr-3" src={user?.avatarUrl} />
+      <img alt={`${user?.username} profile`} className="w-10 h-10 rounded-full mr-3" src={user?.avatarUrl || undefined} />
       <div className="flex-1">
         <div className="flex justify-between items-start">
           <div>
