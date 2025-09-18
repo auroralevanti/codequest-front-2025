@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import FannedImages from './FannedImages';
+import CommentList from '../comment/CommentList';
 import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
 
 type User = { id: string; username: string; avatarUrl?: string };
@@ -22,6 +23,7 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: any
 }
 
 export default function PostCard({ user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
+  const [showComments, setShowComments] = useState(false);
   return (
     <div className="bg-background-light dark:bg-background-dark p-4">
       <div className="flex justify-between items-center mb-4">
@@ -45,13 +47,31 @@ export default function PostCard({ user, createdAt, body, images = [], likes = 0
           likes={likes}
           commentsCount={comments}
           onLike={() => {}}
+          onToggleComments={() => setShowComments(s => !s)}
         />
+      </div>
+
+      {/* Collapsible comments area */}
+      <div className="mt-4">
+        <div
+          className="overflow-hidden transition-[max-height,opacity] duration-300"
+          style={{ maxHeight: showComments ? 400 : 0, opacity: showComments ? 1 : 0 }}
+        >
+          {showComments && (
+            <CommentList
+              items={[
+                { id: 'c1', user: { id: 'u1', username: 'Devi', avatarUrl: '' }, body: 'Nice post!', createdAt: '2h' },
+                { id: 'c2', user: { id: 'u2', username: 'Alex', avatarUrl: '' }, body: 'Great photos.', createdAt: '1h' },
+              ]}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function IconButtons({ likes, commentsCount, onLike }: { likes: number; commentsCount: number; onLike?: () => void }) {
+function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes: number; commentsCount: number; onLike?: () => void; onToggleComments?: () => void }) {
   const [liked, setLiked] = useState(false);
   const [commented, setCommented] = useState(false);
   const [shared, setShared] = useState(false);
@@ -70,6 +90,7 @@ function IconButtons({ likes, commentsCount, onLike }: { likes: number; comments
     setCommented(prev => !prev);
     setCommentPulse(true);
     setTimeout(() => setCommentPulse(false), 220);
+    onToggleComments && onToggleComments();
   };
   const handleShare = () => {
     setShared(prev => !prev);
