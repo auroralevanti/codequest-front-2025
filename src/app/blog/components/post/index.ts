@@ -1,4 +1,4 @@
-export { PostCard } from './PostCard';
+export { PostCard } from './PostCard_Old';
 export { NewPostForm } from './NewPostForm';
 export { PostModal } from './PostModal';
 

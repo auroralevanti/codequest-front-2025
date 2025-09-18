@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Comment } from '@/types/comment';
-import { Comment as CommentComponent } from './Comment';
+import { Comment as CommentComponent } from './Comment_Old';
 import { CommentForm } from './CommentForm';
 import { Separator } from '@radix-ui/react-separator';
 
