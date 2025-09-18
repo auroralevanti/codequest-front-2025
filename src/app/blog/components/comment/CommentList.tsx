@@ -18,9 +18,9 @@ type Props = {
 export default function CommentList({ items = [] }: Props) {
   if (items.length === 0) return null;
   return (
-    <div className="border-t border-border-light dark:border-border-dark">
-      {items.map((c) => (
-        <div key={c.id} className="p-4 border-b border-border-light dark:border-border-dark">
+    <div className="border-t border-light-token dark:border-border-dark">
+      {items.map((c, idx) => (
+        <div key={c.id} className={`${idx < items.length - 1 ? 'p-4 border-b border-light-token dark:border-border-dark' : 'p-4'}`}>
           <Comment user={c.user} body={c.body} createdAt={c.createdAt} />
         </div>
       ))}
