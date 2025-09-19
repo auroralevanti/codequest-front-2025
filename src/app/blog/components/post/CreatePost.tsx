@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import UserBadge from './UserBadge';
 import { Button } from '@/components/ui/button';
-import { MdClose, MdAttachFile, MdCategory, MdLabel, MdAdd } from 'react-icons/md';
+import { MdClose, MdAttachFile, MdCategory, MdLabel } from 'react-icons/md';
 import { apiUrls } from '@/config/api';
 import { getUserCookie } from '@/lib/cookies';
 
@@ -29,13 +29,19 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
         if (catsRes.ok) {
           const catsJson = await catsRes.json();
           const cats = Array.isArray(catsJson) ? catsJson : catsJson?.data || catsJson?.items || [];
-          setAvailableCategories((cats as Array<Record<string, unknown>>).map((c) => ({ id: String((c as any).id ?? ''), name: String((c as any).name ?? '') })));
+          setAvailableCategories((cats as Array<Record<string, unknown>>).map((c) => {
+            const rec = c as Record<string, unknown>;
+            return { id: String(rec['id'] ?? ''), name: String(rec['name'] ?? '') };
+          }));
         }
 
         if (tagsRes.ok) {
           const tagsJson = await tagsRes.json();
           const tags = Array.isArray(tagsJson) ? tagsJson : tagsJson?.data || tagsJson?.items || [];
-          setAvailableTags((tags as Array<Record<string, unknown>>).map((t) => ({ id: String((t as any).id ?? ''), name: String((t as any).name ?? '') })));
+          setAvailableTags((tags as Array<Record<string, unknown>>).map((t) => {
+            const rec = t as Record<string, unknown>;
+            return { id: String(rec['id'] ?? ''), name: String(rec['name'] ?? '') };
+          }));
         }
       } catch (e) {
         // ignore errors for now
