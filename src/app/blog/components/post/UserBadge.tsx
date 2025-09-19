@@ -6,7 +6,7 @@ import { getUserCookie, UserData } from '@/lib/cookies';
 export default function UserBadge({ user }: { user?: Partial<UserData> }) {
   const u = (user as Partial<UserData>) ?? getUserCookie();
   const name = u?.username || u?.name || 'Usuario';
-  const avatar = (u as any)?.avatar || undefined;
+  const avatar = u?.avatar as string | undefined;
 
   return (
     <div className="flex items-center space-x-3">

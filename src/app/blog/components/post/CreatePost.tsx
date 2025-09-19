@@ -29,13 +29,13 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
         if (catsRes.ok) {
           const catsJson = await catsRes.json();
           const cats = Array.isArray(catsJson) ? catsJson : catsJson?.data || catsJson?.items || [];
-          setAvailableCategories(cats.map((c: any) => ({ id: c.id, name: c.name })));
+          setAvailableCategories((cats as Array<Record<string, unknown>>).map((c) => ({ id: String((c as any).id ?? ''), name: String((c as any).name ?? '') })));
         }
 
         if (tagsRes.ok) {
           const tagsJson = await tagsRes.json();
           const tags = Array.isArray(tagsJson) ? tagsJson : tagsJson?.data || tagsJson?.items || [];
-          setAvailableTags(tags.map((t: any) => ({ id: t.id, name: t.name })));
+          setAvailableTags((tags as Array<Record<string, unknown>>).map((t) => ({ id: String((t as any).id ?? ''), name: String((t as any).name ?? '') })));
         }
       } catch (e) {
         // ignore errors for now
