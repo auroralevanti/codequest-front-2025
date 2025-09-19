@@ -36,7 +36,7 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [closeForm, setCloseForm] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<NewPostFormType>();
+  const { register, handleSubmit, formState: { errors }, setValue, reset, getValues } = useForm<NewPostFormType>();
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategory(categoryName);
@@ -55,36 +55,32 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
     const userData = getUserCookie();
     const token = userData?.token;
     console.log('User token:', token);
-    const status = 'draft';
+  const status = 'published';
 
     try {
-
       const newPost = await fetch( url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ title, content, status })
-    });
-    
-    const resp = await newPost.json();
-    console.log(resp);
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, content, slug, category: selectedCategory || category, tagIds, status })
+      });
 
-    if (resp && resp.id ) {
-   
-      alert('Post creado con exito');
-      reset();
-      onCancel;
-      return;
-    };
+      const resp = await newPost.json();
 
-    if (resp.message) {
-      alert(resp.message);
-    } else {
-      alert('Error al iniciar sesión. Inténtalo de nuevo.');
-    };
+      if (resp && resp.id ) {
+        alert('Post creado con exito');
+        reset();
+        onCancel();
+        return;
+      }
 
+      if (resp.message) {
+        alert(resp.message);
+      } else {
+        alert('Error al crear el post. Inténtalo de nuevo.');
+      }
     } catch (error) {
       console.log({ error });
       alert('Problemas con el servidor');
@@ -101,7 +97,44 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onCancel}
+            onClick={async () => {
+              // Ask to save as draft when closing
+              const saveDraft = confirm('Deseas guardar tu post como borrador?');
+              if (saveDraft) {
+                const vals = getValues();
+                const payload = {
+                  title: vals.title,
+                  content: vals.content,
+                  slug: vals.slug,
+                  category: vals.category || selectedCategory,
+                  tagIds: vals.tagIds,
+                } as NewPostFormType;
+                try {
+                  const token = getUserCookie()?.token;
+                  const res = await fetch(apiUrls.posts.create(), {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ ...payload, status: 'draft' })
+                  });
+                  const data = await res.json();
+                  if (data && data.id) {
+                    alert('Borrador guardado');
+                    reset();
+                    onCancel();
+                    return;
+                  }
+                  alert(data?.message || 'No se pudo guardar el borrador');
+                } catch (err) {
+                  console.error(err);
+                  alert('Error al guardar borrador');
+                }
+              } else {
+                onCancel();
+              }
+            }}
             className="text-gray-500 hover:text-gray-700"
           >
             <FaTimes size={16} />
@@ -176,7 +209,43 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
               <Button
                 type="button"
                 variant='outline'
-                onClick={onCancel}
+                onClick={async () => {
+                  const saveDraft = confirm('Deseas guardar tu post como borrador?');
+                  if (saveDraft) {
+                    const vals = getValues();
+                    try {
+                      const token = getUserCookie()?.token;
+                      const res = await fetch(apiUrls.posts.create(), {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                          title: vals.title,
+                          content: vals.content,
+                          slug: vals.slug,
+                          category: vals.category || selectedCategory,
+                          tagIds: vals.tagIds,
+                          status: 'draft'
+                        })
+                      });
+                      const data = await res.json();
+                      if (data && data.id) {
+                        alert('Borrador guardado');
+                        reset();
+                        onCancel();
+                        return;
+                      }
+                      alert(data?.message || 'No se pudo guardar el borrador');
+                    } catch (err) {
+                      console.error(err);
+                      alert('Error al guardar borrador');
+                    }
+                  } else {
+                    onCancel();
+                  }
+                }}
                 className="px-6 bg-white border-2 border-accent-background"
               >
                 Cancelar
