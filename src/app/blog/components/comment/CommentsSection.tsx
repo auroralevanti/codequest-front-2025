@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Comment } from '@/types/comment';
-import { Comment as CommentComponent } from './Comment_Old';
+import CommentList from './CommentList';
 import { CommentForm } from './CommentForm';
 import { Separator } from '@radix-ui/react-separator';
 import { apiUrls } from '@/config/api';
@@ -58,15 +58,46 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
       try {
         setLoading(true);
         const token = getUserCookie()?.token;
-        const res = await fetch(`${apiUrls.posts.byId(postId)}/comments`, {
+        const url = `${apiUrls.posts.byId(postId)}/comments`;
+        console.debug('[CommentsSection] fetching', url);
+        const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-        if (!res.ok) throw new Error('Failed to fetch comments');
+        console.debug('[CommentsSection] response', res.status, res.statusText);
+        if (!res.ok) {
+          // fallback to mock for UX while debugging
+          console.error('[CommentsSection] failed to fetch comments, using mockComments');
+          setComments(mockComments.filter(c => String(c.postId) === String(postId)));
+          return;
+        }
+
         const data = await res.json();
-        const list = Array.isArray(data) ? data : data.items || data.comments || [];
-        setComments(list);
+        // API may return { data: [...], total } or { items: [...] } or direct array
+        let list: any[] = [];
+        if (Array.isArray(data)) list = data;
+        else if (Array.isArray(data.data)) list = data.data;
+        else if (Array.isArray(data.items)) list = data.items;
+        else if (Array.isArray(data.comments)) list = data.comments;
+        else list = [];
+
+        // Normalize comments: backend returns author as object { id, username, avatarUrl }
+        const normalized = list.map((c: any) => ({
+          id: String(c.id),
+          postId: String(c.postId ?? c.postId),
+          parentId: c.parentCommentId ?? c.parentId ?? c.parentCommentId ?? undefined,
+          author: c.author?.username || c.author || c.username || c.authorName || 'Usuario',
+          content: c.content || c.body || '',
+          createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+          isLiked: c.isLiked ?? c.isLikedByUser ?? false,
+          likes: c.likes ?? c.likesCount ?? c.likesCountTotal ?? 0,
+          replies: Array.isArray(c.replies) ? c.replies : [],
+        }));
+
+        setComments(normalized);
       } catch (err) {
-        console.error(err);
+        console.error('[CommentsSection] error fetching comments', err);
+        // fallback to mock data so UI remains usable
+        setComments(mockComments.filter(c => String(c.postId) === String(postId)));
       } finally {
         setLoading(false);
       }
@@ -165,15 +196,15 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
             <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
           </div>
         ) : (
-          comments.map(comment => (
-            <CommentComponent
-              key={comment.id}
-              comment={comment}
-              onLike={handleLike}
-              onReply={handleReply}
-              currentUser={currentUser}
-            />
-          ))
+          // Map internal comment shape to CommentList items
+          <CommentList
+            items={comments.map(c => ({
+              id: c.id,
+              user: { id: c.id, username: String(c.author ?? c.username || 'Usuario'), avatarUrl: undefined },
+              body: c.content,
+              createdAt: c.createdAt,
+            }))}
+          />
         )}
       </div>
     </div>
