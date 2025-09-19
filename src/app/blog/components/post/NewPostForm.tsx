@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,17 +14,11 @@ import { getUserCookie } from '@/lib/cookies';
 import router from 'next/router';
 import { apiUrls } from '@/config/api';
 
-const categories = [
-  { name: 'React', href: '' },
-  { name: 'React Native', href: '' },
-  { name: 'NEXTJS', href: '' },
-  { name: 'VUE', href: '' },
-  { name: 'Angular', href: '' },
-  { name: 'Astro', href: '' },
-  { name: 'Node', href: '' },
-  { name: 'NestJs', href: '' },
-  { name: 'Flutter', href: '' },
-];
+type Category = { id: string; name: string };
+type Tag = { id: string; name: string };
+
+const initialCategories: Category[] = [];
+const initialTags: Tag[] = [];
 
 interface NewPostFormProps {
   submitForm: (data: NewPostFormType) => void;
@@ -34,6 +28,9 @@ interface NewPostFormProps {
 export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [availableCategories, setAvailableCategories] = useState<Category[]>(initialCategories);
+  const [availableTags, setAvailableTags] = useState<Tag[]>(initialTags);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [closeForm, setCloseForm] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, setValue, reset, getValues } = useForm<NewPostFormType>();
@@ -42,6 +39,35 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
     setSelectedCategory(categoryName);
     setValue('category', categoryName);
   };
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTags(prev => {
+      const next = prev.includes(tagId) ? prev.filter(t => t !== tagId) : [...prev, tagId];
+      setValue('tagIds', next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const [catsRes, tagsRes] = await Promise.all([
+          fetch(apiUrls.categories.list()),
+          fetch(apiUrls.tags.list()),
+        ]);
+        const catsJson = await catsRes.json();
+        const tagsJson = await tagsRes.json();
+        // API may return arrays or { items: [] }
+        const cats = Array.isArray(catsJson) ? catsJson : catsJson.categories || catsJson.items || [];
+        const tags = Array.isArray(tagsJson) ? tagsJson : tagsJson.tags || tagsJson.items || [];
+        setAvailableCategories(cats.map((c: any) => ({ id: c.id, name: c.name })));
+        setAvailableTags(tags.map((t: any) => ({ id: t.id, name: t.name })));
+      } catch (err) {
+        console.error('Error fetching categories/tags', err);
+      }
+    };
+    fetchMeta();
+  }, []);
 
   const submitNewPost: SubmitHandler<NewPostFormType> = async ({ title, content, slug, category, tagIds}: NewPostFormType) => {
     if (!selectedCategory) {
@@ -58,13 +84,14 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
   const status = 'published';
 
     try {
+      const tagsToSend = selectedTags && selectedTags.length ? selectedTags : tagIds;
       const newPost = await fetch( url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, content, slug, category: selectedCategory || category, tagIds, status })
+        body: JSON.stringify({ title, content, slug, category: selectedCategory || category, tagIds: tagsToSend, status })
       });
 
       const resp = await newPost.json();
@@ -107,7 +134,7 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
                   content: vals.content,
                   slug: vals.slug,
                   category: vals.category || selectedCategory,
-                  tagIds: vals.tagIds,
+                  tagIds: selectedTags.length ? selectedTags : vals.tagIds,
                 } as NewPostFormType;
                 try {
                   const token = getUserCookie()?.token;
@@ -167,24 +194,51 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
                 Categoría *
               </label>
               <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Badge
-                    key={category.name}
-                    variant={selectedCategory === category.name ? "default" : "outline"}
-                    className={`cursor-pointer transition-colors ${
-                      selectedCategory === category.name 
-                        ? 'bg-accent-background text-black' 
-                        : 'hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleCategorySelect(category.name)}
-                  >
-                    {category.name}
-                  </Badge>
-                ))}
+                {availableCategories.length === 0 ? (
+                  <p className="text-sm text-secondary-light">Cargando categorías...</p>
+                ) : (
+                  availableCategories.map((category) => (
+                    <Badge
+                      key={category.id}
+                      variant={selectedCategory === category.name ? "default" : "outline"}
+                      className={`cursor-pointer transition-colors ${
+                        selectedCategory === category.name 
+                          ? 'bg-accent-background text-black' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => handleCategorySelect(category.name)}
+                    >
+                      {category.name}
+                    </Badge>
+                  ))
+                )}
               </div>
               {!selectedCategory && (
                 <p className="text-red-500 text-sm mt-1">Por favor selecciona una categoría</p>
               )}
+            </div>
+
+            {/* Tags multi-select */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tags
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {availableTags.length === 0 ? (
+                  <p className="text-sm text-secondary-light">Cargando tags...</p>
+                ) : (
+                  availableTags.map(tag => (
+                    <Badge
+                      key={tag.id}
+                      variant={selectedTags.includes(tag.id) ? 'default' : 'outline'}
+                      className={`cursor-pointer ${selectedTags.includes(tag.id) ? 'bg-accent-background text-black' : 'hover:bg-gray-100'}`}
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))
+                )}
+              </div>
             </div>
 
 
@@ -226,7 +280,7 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
                           content: vals.content,
                           slug: vals.slug,
                           category: vals.category || selectedCategory,
-                          tagIds: vals.tagIds,
+                          tagIds: selectedTags.length ? selectedTags : vals.tagIds,
                           status: 'draft'
                         })
                       });
