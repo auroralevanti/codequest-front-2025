@@ -440,7 +440,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                         <span>Autor: {post.author?.username || 'Desconocido'}</span>
                         <span>Estado: {post.status || 'draft'}</span>
-                        <span>Creado: {new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>Creado: {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '—'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
