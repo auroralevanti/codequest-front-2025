@@ -13,12 +13,26 @@ interface CommentsSectionProps {
   currentUser: string;
 }
 
-// Mock data for demonstration - in a real app, this would come from an API
-const mockComments: Comment[] = [
+// Local normalized comment shape used inside this component
+type NormalizedComment = {
+  id: string;
+  postId: string;
+  parentId?: string;
+  author: string;
+  avatarUrl?: string;
+  content: string;
+  createdAt: string;
+  isLiked: boolean;
+  likes: number;
+  replies: NormalizedComment[];
+};
+
+// Mock data for demonstration - normalized to `NormalizedComment`
+const mockComments: NormalizedComment[] = [
   {
     id: '1',
     postId: '1',
-    username: 'Aurora',
+    author: 'Aurora',
     content: '¡Excelente post! Muy útil la información compartida.',
     createdAt: '2025-01-19T10:30:00Z',
     likes: 5,
@@ -27,7 +41,7 @@ const mockComments: Comment[] = [
       {
         id: '2',
         postId: '1',
-        username: 'Josa',
+        author: 'Josa',
         content: 'Totalmente de acuerdo, gracias por compartir!',
         createdAt: '2025-01-19T11:15:00Z',
         likes: 2,
@@ -40,7 +54,7 @@ const mockComments: Comment[] = [
   {
     id: '3',
     postId: '1',
-    username: 'Rodolfo',
+    author: 'Rodolfo',
     content: '¿Podrías explicar más sobre el punto 3? Me gustaría entender mejor.',
     createdAt: '2025-01-19T12:00:00Z',
     likes: 1,
@@ -50,7 +64,7 @@ const mockComments: Comment[] = [
 ];
 
 export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) => {
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<NormalizedComment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,26 +87,37 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
 
         const data = await res.json();
         // API may return { data: [...], total } or { items: [...] } or direct array
-        let list: Array<Record<string, unknown>> = [];
-        if (Array.isArray(data)) list = data as Array<Record<string, unknown>>;
-        else if (Array.isArray((data as any)?.data)) list = (data as any).data as Array<Record<string, unknown>>;
-        else if (Array.isArray((data as any)?.items)) list = (data as any).items as Array<Record<string, unknown>>;
-        else if (Array.isArray((data as any)?.comments)) list = (data as any).comments as Array<Record<string, unknown>>;
-        else list = [];
+  let list: Array<Record<string, unknown>> = [];
+  if (Array.isArray(data)) list = data as Array<Record<string, unknown>>;
+  else if (data && typeof data === 'object' && Array.isArray((data as Record<string, unknown>).data)) list = (data as Record<string, unknown>).data as Array<Record<string, unknown>>;
+  else if (data && typeof data === 'object' && Array.isArray((data as Record<string, unknown>).items)) list = (data as Record<string, unknown>).items as Array<Record<string, unknown>>;
+  else if (data && typeof data === 'object' && Array.isArray((data as Record<string, unknown>).comments)) list = (data as Record<string, unknown>).comments as Array<Record<string, unknown>>;
+  else list = [];
 
         // Normalize comments: backend returns author as object { id, username, avatarUrl }
         const normalized = list.map((c) => {
           const id = String(c['id'] ?? '');
           const postIdVal = c['postId'] ?? c['post_id'] ?? '';
           const parentId = (c['parentCommentId'] ?? c['parentId'] ?? c['parent_comment_id']) as string | undefined;
-          const authorObj = c['author'] as any;
-          const authorName = (authorObj && (authorObj.username || authorObj.name)) || (c['username'] as string) || (c['authorName'] as string) || 'Usuario';
-          const avatarUrl = (authorObj && authorObj.avatarUrl) || (c['authorAvatar'] as string) || (c['avatarUrl'] as string) || undefined;
+          const authorObj = c['author'] as Record<string, unknown> | undefined;
+          const authorName = (authorObj && ((authorObj['username'] as string) || (authorObj['name'] as string))) || (c['username'] as string) || (c['authorName'] as string) || 'Usuario';
+          const avatarUrl = (authorObj && (authorObj['avatarUrl'] as string)) || (c['authorAvatar'] as string) || (c['avatarUrl'] as string) || undefined;
           const content = (c['content'] as string) || (c['body'] as string) || '';
           const createdAt = (c['createdAt'] as string) || (c['created_at'] as string) || new Date().toISOString();
           const isLiked = (c['isLiked'] as boolean) ?? (c['isLikedByUser'] as boolean) ?? false;
           const likes = (c['likes'] as number) ?? (c['likesCount'] as number) ?? (c['likesCountTotal'] as number) ?? 0;
-          const replies = Array.isArray(c['replies']) ? (c['replies'] as any[]) : [];
+          const replies = Array.isArray(c['replies']) ? (c['replies'] as unknown[]).map((r) => ({
+            id: String((r as Record<string, unknown>)['id'] ?? ''),
+            postId: String(((r as Record<string, unknown>)['postId'] ?? (r as Record<string, unknown>)['post_id']) ?? ''),
+            parentId: String((r as Record<string, unknown>)['parentId'] ?? (r as Record<string, unknown>)['parent_comment_id'] ?? '') || undefined,
+            author: String((r as Record<string, unknown>)['author'] ?? (r as Record<string, unknown>)['username'] ?? 'Usuario'),
+            avatarUrl: (r as Record<string, unknown>)['avatarUrl'] as string | undefined,
+            content: String((r as Record<string, unknown>)['content'] ?? (r as Record<string, unknown>)['body'] ?? ''),
+            createdAt: String((r as Record<string, unknown>)['createdAt'] ?? (r as Record<string, unknown>)['created_at'] ?? new Date().toISOString()),
+            isLiked: Boolean((r as Record<string, unknown>)['isLiked'] ?? (r as Record<string, unknown>)['isLikedByUser'] ?? false),
+            likes: Number((r as Record<string, unknown>)['likes'] ?? (r as Record<string, unknown>)['likesCount'] ?? 0),
+            replies: [],
+          })) : [];
 
           return {
             id,
@@ -122,9 +147,9 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
   }, [postId]);
 
   const handleAddComment = (data: { content: string; author: string }) => {
-    const newComment: Comment = {
+    const newComment: NormalizedComment = {
       id: Date.now().toString(),
-      postId,
+      postId: String(postId),
       author: data.author,
       content: data.content,
       createdAt: new Date().toISOString(),
@@ -152,9 +177,9 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
   };
 
   const handleReply = (parentId: string, content: string, author: string) => {
-    const newReply: Comment = {
+    const newReply: NormalizedComment = {
       id: Date.now().toString(),
-      postId,
+      postId: String(postId),
       author,
       content,
       createdAt: new Date().toISOString(),
@@ -171,7 +196,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
           return {
             ...comment,
             replies: [...currentReplies, newReply]
-          };
+          } as NormalizedComment;
         }
         return comment;
       })
@@ -215,7 +240,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
           <CommentList
             items={comments.map(c => ({
               id: c.id,
-              user: { id: (c as any).id, username: String((c.author ?? c.username) || 'Usuario'), avatarUrl: (c as any).avatarUrl },
+              user: { id: c.id, username: String(c.author || 'Usuario'), avatarUrl: c.avatarUrl },
               body: c.content,
               createdAt: c.createdAt,
             }))}
