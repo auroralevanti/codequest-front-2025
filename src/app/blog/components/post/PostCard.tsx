@@ -9,7 +9,9 @@ type User = { id: string; username: string; avatarUrl?: string };
 
 type Props = { user: User; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
 
-function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: any; active?: boolean; activeColor?: string; pulse?: boolean; onClick?: () => void }) {
+type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
+function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: IconComponent; active?: boolean; activeColor?: string; pulse?: boolean; onClick?: () => void }) {
   // pulse: temporary scale when clicked (controlled by parent)
   const scaleClass = pulse ? 'scale-110' : 'hover:scale-105';
   const colorClass = active ? activeColor ?? 'text-primary' : 'text-current';

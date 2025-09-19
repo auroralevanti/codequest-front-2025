@@ -11,10 +11,26 @@ import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaPlus, FaSearch, FaUserPlus, FaEy
 import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
 import { apiUrls } from '@/config/api';
 
+type AdminUser = {
+  id: string;
+  username?: string;
+  email?: string;
+  roles?: string[];
+};
+
+type AdminPost = {
+  id: string;
+  title?: string;
+  content?: string;
+  author?: { username?: string };
+  status?: string;
+  createdAt?: string;
+};
+
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -131,7 +147,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: any) => {
+  const handleDeleteUser = async (userId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
         const userData = getUserCookie();
@@ -163,7 +179,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleDeletePost = async (postId: any) => {
+  const handleDeletePost = async (postId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este post?')) {
       try {
         const userData = getUserCookie();
