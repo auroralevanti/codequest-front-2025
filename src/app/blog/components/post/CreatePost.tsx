@@ -3,9 +3,13 @@ import React, { useState } from 'react';
 import UserBadge from './UserBadge';
 import { Button } from '@/components/ui/button';
 import { MdClose, MdPhotoLibrary, MdGif, MdPoll, MdArticle, MdPets, MdEvent, MdAdd } from 'react-icons/md';
+import { apiUrls } from '@/config/api';
+import { getUserCookie } from '@/lib/cookies';
 
 export default function CreatePost({ onClose }: { onClose?: () => void }) {
   const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <div className="max-w-md mx-auto px-4">
@@ -15,12 +19,54 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
             <MdClose />
           </button>
           <h1 className="text-lg font-semibold text-text-light dark:text-text-dark">Create Post</h1>
-          <button className="bg-white text-black font-medium py-1.5 px-4 rounded-full text-sm hover:bg-green-600 hover:text-white transition-colors">
-            Post
-          </button>
+          <Button
+            onClick={async () => {
+              if (submitting) return;
+              if (!title.trim() && !text.trim()) {
+                alert('Please add a title or content for the post.');
+                return;
+              }
+              setSubmitting(true);
+              try {
+                const token = getUserCookie()?.token;
+                const res = await fetch(apiUrls.posts.create(), {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
+                  body: JSON.stringify({ title: title.trim(), body: text.trim(), status: 'published' }),
+                });
+                if (!res.ok) {
+                  const err = await res.text();
+                  throw new Error(err || 'Failed to create post');
+                }
+                const created = await res.json();
+                // let listeners refresh posts
+                try { window.dispatchEvent(new CustomEvent('post:created', { detail: created })); } catch {}
+                alert('Post created successfully');
+                onClose && onClose();
+              } catch (e) {
+                console.error('CreatePost error', e);
+                alert('Error creating post');
+              } finally {
+                setSubmitting(false);
+              }
+            }}
+            disabled={submitting || (!title.trim() && !text.trim())}
+            className="bg-white text-black font-medium py-1.5 px-4 rounded-full text-sm hover:bg-green-600 hover:text-white transition-colors"
+          >
+            {submitting ? 'Posting...' : 'Post'}
+          </Button>
         </header>
         <main className="flex-grow p-4">
           <UserBadge />
+          <input
+            className="w-full mt-3 bg-transparent border-0 focus:ring-0 p-0 text-xl font-semibold text-text-light dark:text-text-dark placeholder-subtext-light dark:placeholder-subtext-dark outline-none"
+            placeholder="Título del post"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
           <textarea
             className="w-full mt-4 bg-transparent border-0 focus:ring-0 p-0 text-lg text-subtext-light dark:text-subtext-dark placeholder-subtext-light dark:placeholder-subtext-dark resize-none outline-none"
             placeholder="What do you want to talk about?"
