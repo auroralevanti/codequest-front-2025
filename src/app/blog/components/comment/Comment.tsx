@@ -19,12 +19,21 @@ export default function Comment({ user, body, createdAt }: Props) {
         <div className="flex justify-between items-start">
           <div>
             <span className="font-bold text-text-light dark:text-text-dark">{user?.username}</span>
-            <span className="text-secondary-light dark:text-secondary-dark text-sm ml-2">{createdAt}</span>
+            <span className="text-secondary-light dark:text-secondary-dark text-sm ml-2">{formatDate(createdAt)}</span>
           </div>
                   <MdMoreHoriz className="text-secondary-light dark:text-secondary-dark text-sm ml-2" />
         </div>
-        <p className=" dark:text-secondary-dark text-lg">Hello Devi, Hello Devi,Hello DeviHello DeviHello DeviHello DeviHello DeviHello DeviHello DeviHello DeviHello Devi</p>
+        <p className=" dark:text-secondary-dark text-lg">{body}</p>
       </div>
     </div>
   );
+}
+
+function formatDate(dateString?: string) {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return dateString;
+  }
 }

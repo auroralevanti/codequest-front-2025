@@ -86,6 +86,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
           postId: String(c.postId ?? c.postId),
           parentId: c.parentCommentId ?? c.parentId ?? c.parentCommentId ?? undefined,
           author: c.author?.username || c.author || c.username || c.authorName || 'Usuario',
+          avatarUrl: c.author?.avatarUrl || c.authorAvatar || c.avatarUrl || undefined,
           content: c.content || c.body || '',
           createdAt: c.createdAt || c.created_at || new Date().toISOString(),
           isLiked: c.isLiked ?? c.isLikedByUser ?? false,
@@ -200,7 +201,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
           <CommentList
             items={comments.map(c => ({
               id: c.id,
-              user: { id: c.id, username: String(c.author ?? c.username || 'Usuario'), avatarUrl: undefined },
+              user: { id: (c as any).id, username: String((c.author ?? c.username) || 'Usuario'), avatarUrl: (c as any).avatarUrl },
               body: c.content,
               createdAt: c.createdAt,
             }))}
