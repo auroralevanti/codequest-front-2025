@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
-import { MdPostAdd } from "react-icons/md";
+import { MdPostAdd, MdExitToApp, MdAdd } from "react-icons/md";
 import { AvatarComponent } from "./components/avatar/Avatar";
 import { PostModal } from "./components/post/PostModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,39 +41,39 @@ export default function DashboardLayout({
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start">
-              <div className=" w-35 ">
+              <div className="hidden sm:block w-35">
                 <Link href='https://cursos.devtalles.com/' passHref>
                   <Image
-                  src={ logoDevTalles.src }
-                  alt='DevTalles logo'
-                  width={ logoDevTalles.width }
-                  height={ logoDevTalles.height }
+                    src={ logoDevTalles.src }
+                    alt='DevTalles logo'
+                    width={ logoDevTalles.width }
+                    height={ logoDevTalles.height }
                   />
                 </Link>
               </div>
-                  <span className="self-center text-white whitespace-nowrap ml-2">
-                    {" "}
-                    <b>DevTalles Blog de usuarios</b>
-                  </span>
+              <span className="hidden sm:inline self-center text-white whitespace-nowrap ml-2">
+                <b>DevTalles Blog de usuarios</b>
+              </span>
             </div>
             <div className="flex items-center space-x-3">
               {/* User Avatar */}
-              <div className="text-white p-2 rounded-full w-12 h-12 flex items-center justify-center">
+              <div className="text-white p-1 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <AvatarComponent />
               </div>
               <button
                 onClick={() => setIsPostModalOpen(true)}
-                className="text-white hover:text-black transition-colors p-2 rounded-full hover:bg-accent-background k hover:bg-opacity-10"
+                className="hidden sm:inline-flex text-white hover:text-black transition-colors p-2 rounded-full hover:bg-accent-background k hover:bg-opacity-10"
                 title="Crear nuevo post"
               >
                 <MdPostAdd size={24} />
               </button>
               <button
                 onClick={logout}
-                className="text-white hover:text-red-300 transition-colors px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-md"
+                className="text-white hover:text-red-300 transition-colors px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded-md flex items-center gap-2"
                 title="Cerrar sesión"
               >
-                Salir
+                <MdExitToApp size={18} />
+                <span className="hidden sm:inline">Salir</span>
               </button>
             </div>
           </div>
@@ -140,9 +140,18 @@ export default function DashboardLayout({
       <PostModal
         isOpen={isPostModalOpen}
         onClose={() => setIsPostModalOpen(false)}
-        onSubmit={handleCreatePost}
         currentUser={user?.name || 'Usuario'}
       />
+
+      {/* Mobile floating add button */}
+      <button
+        onClick={() => setIsPostModalOpen(true)}
+        title="Crear nuevo post"
+        aria-label="Crear nuevo post"
+        className="sm:hidden fixed bottom-4 right-4 z-40 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
+      >
+        <MdAdd size={22} />
+      </button>
     </>
   );
 }
