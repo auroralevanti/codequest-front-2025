@@ -9,7 +9,18 @@ import { getUserCookie } from '@/lib/cookies';
 const mockUser = { id: 'u1', username: 'Jordyn George', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' };
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<any[]>([]);
+  type Post = {
+    id: string;
+    author?: { id?: string; username?: string; avatarUrl?: string };
+    createdAt?: string;
+    body?: string;
+    content?: string;
+    images?: string[];
+    likes?: number;
+    commentsCount?: number;
+  };
+
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,7 +57,20 @@ export default function BlogPage() {
           <div>Loading posts...</div>
         ) : (
           posts.map((p) => (
-            <PostCard key={p.id} postId={p.id} user={p.author} createdAt={p.createdAt} body={p.body || p.content} images={p.images || []} likes={p.likes || 0} comments={p.commentsCount || 0} />
+            <PostCard
+              key={p.id}
+              postId={p.id}
+              user={
+                p.author
+                  ? { id: String(p.author.id ?? ''), username: String(p.author.username ?? 'Unknown'), avatarUrl: p.author.avatarUrl as string | undefined }
+                  : { id: '', username: 'Unknown', avatarUrl: undefined }
+              }
+              createdAt={p.createdAt}
+              body={p.body || p.content}
+              images={p.images || []}
+              likes={p.likes || 0}
+              comments={p.commentsCount || 0}
+            />
           ))
         )}
       </div>

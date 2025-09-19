@@ -11,7 +11,6 @@ import { FaTimes } from 'react-icons/fa';
 
 import { NewPostForm as NewPostFormType } from '@/types/forms';
 import { getUserCookie } from '@/lib/cookies';
-import router from 'next/router';
 import { apiUrls } from '@/config/api';
 
 type Category = { id: string; name: string };
@@ -31,7 +30,6 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
   const [availableCategories, setAvailableCategories] = useState<Category[]>(initialCategories);
   const [availableTags, setAvailableTags] = useState<Tag[]>(initialTags);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [closeForm, setCloseForm] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, setValue, reset, getValues } = useForm<NewPostFormType>();
 
@@ -58,10 +56,20 @@ export const NewPostForm = ({ submitForm, onCancel }: NewPostFormProps) => {
         const catsJson = await catsRes.json();
         const tagsJson = await tagsRes.json();
         // API may return arrays or { items: [] }
-        const cats = Array.isArray(catsJson) ? catsJson : catsJson.categories || catsJson.items || [];
-        const tags = Array.isArray(tagsJson) ? tagsJson : tagsJson.tags || tagsJson.items || [];
-        setAvailableCategories(cats.map((c: any) => ({ id: c.id, name: c.name })));
-        setAvailableTags(tags.map((t: any) => ({ id: t.id, name: t.name })));
+        const cats = Array.isArray(catsJson) ? catsJson : (catsJson && (catsJson.categories || catsJson.items)) || [];
+        const tags = Array.isArray(tagsJson) ? tagsJson : (tagsJson && (tagsJson.tags || tagsJson.items)) || [];
+        setAvailableCategories(
+          (cats as unknown[]).map((c) => {
+            const cc = c as { id?: string; name?: string };
+            return { id: cc.id ?? '', name: cc.name ?? '' };
+          })
+        );
+        setAvailableTags(
+          (tags as unknown[]).map((t) => {
+            const tt = t as { id?: string; name?: string };
+            return { id: tt.id ?? '', name: tt.name ?? '' };
+          })
+        );
       } catch (err) {
         console.error('Error fetching categories/tags', err);
       }
