@@ -18,7 +18,7 @@ export const PostModal = ({ isOpen, onClose }: PostModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none"
+          className="fixed inset-0 z-50 flex items-end justify-center"
         >
           {/* Blurred backdrop (stronger blur + softer tint) */}
           <div
@@ -34,6 +34,7 @@ export const PostModal = ({ isOpen, onClose }: PostModalProps) => {
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="relative w-full max-w-md px-4 pb-6 pointer-events-auto"
             style={{ bottom: 0 }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="pointer-events-auto">
               <div className="transform translate-y-0">
