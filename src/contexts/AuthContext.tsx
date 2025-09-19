@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { LoginForm } from '@/types/forms';
-import { getUserCookie, removeUserCookie, setUserCookie } from '@/lib/cookies';
+import { getUserCookie, removeUserCookie, setUserCookie, UserData } from '@/lib/cookies';
+import { apiUrls } from '@/config/api';
 
 // Simple user interface
 interface User {
@@ -55,9 +56,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (cookieData) {
           setUser({
             id: cookieData.id,
-            name: cookieData.name,
+            name: cookieData.name || cookieData.username || '',
             email: cookieData.email,
-            role: cookieData.role,
+            role: cookieData.role || cookieData.roles || 'user',
             avatar: cookieData.avatar
           });
           setToken(cookieData.token || null);
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoading(true);
       setError(null);
 
-      const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/login';
+      const url = apiUrls.auth.login();
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -101,9 +102,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Save to cookies
         setUserCookie({
           id: resp.user.id,
-          name: resp.user.name,
+          username: resp.user.username,
+          name: resp.user.name || resp.user.username,
           email: resp.user.email,
-          role: resp.user.role,
+          roles: resp.user.roles,
+          role: resp.user.role || resp.user.roles,
           avatar: resp.user.avatar,
           token: resp.token
         });

@@ -2,11 +2,24 @@
 @import "tw-animate-css";
 
 :root {
+
   --background: oklch(0.2268 0.0738 292.15);
   --accent-background: oklch(0.8959 0.065 307.18);
   --darker-purple: oklch(0.1796 0.0498 293.68);
   --button-background: oklch(0.8959 0.065 307.18);
   --devi-color: oklch(0.5525 0.2889 298.93);
+  --muted-600: oklch(0.46 0.016 260);
+
+  /* Color False */
+  --primary: oklch(0.538 0.272 246.48);
+  --background-light: oklch(0.9505 0.0034 264.29);
+  --background-dark: oklch(0.2268 0.0738 292.15);
+  --text-light: oklch(0.2268 0.0738 292.15);
+  --text-dark: oklch(0.9505 0.0034 264.29);
+  --text-secondary-light: oklch(0.46 0.016 260); /* approx. #6B7280 in oklch */
+  --text-secondary-dark: oklch(0.72 0.01 264.29); /* approx. #9CA3AF in oklch */
+  --border-dark: oklch(0.1796 0.0498 293.68);
+  --border-light: oklch(0.72 0.01 264.29); /* approx. #E5E7EB in oklch */
   
 }
 
@@ -22,3 +35,50 @@
 body {
   background: rgb(var(--background));
 }
+
+/* Utility tokens matching project design */
+.text-muted {
+  color: var(--muted-600) !important;
+}
+
+.border-dark-token {
+  border-color: var(--border-dark) !important;
+}
+
+.primary-text {
+  color: var(--primary) !important;
+}
+
+.border-light-token {
+  border-color: var(--border-light) !important;
+}
+
+.border-dark-token {
+  border-color: var(--border-dark) !important;
+}
+
+.text-secondary-light {
+  color: var(--text-secondary-light) !important;
+}
+
+.text-secondary-dark {
+  color: var(--text-secondary-dark) !important;
+}
+
+.text-light {
+  color: var(--text-light) !important;
+}
+
+.text-dark {
+  color: var(--text-dark) !important;
+}
+
+.background-light {
+  background-color: var(--background-light) !important;
+}
+
+.background-dark {
+  background-color: var(--background-dark) !important;
+}
+
+

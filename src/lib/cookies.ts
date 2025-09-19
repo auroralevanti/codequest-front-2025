@@ -2,9 +2,11 @@
 
 export interface UserData {
   id: string;
-  username: string;
+  username?: string;
+  name?: string;
   email: string;
-  roles: 'admin' | 'user';
+  roles?: 'admin' | 'user';
+  role?: 'admin' | 'user';
   avatar?: string;
   token?: string;
 }
@@ -97,8 +99,8 @@ export const getUserDisplayInfo = (): { name: string; role: string; avatar?: str
   if (!userData) return null;
   
   return {
-    name: userData.username,
-    role: userData.roles,
+    name: userData.username || userData.name || '',
+    role: userData.roles || userData.role || 'user',
     avatar: userData.avatar
   };
 };
@@ -108,6 +110,6 @@ export const validateUserCookie = (): boolean => {
   const userData = getUserCookie();
   if (!userData) return false;
   
-  const requiredFields = ['id', 'name', 'email', 'role'];
+  const requiredFields = ['id', 'email'];
   return requiredFields.every(field => userData[field as keyof UserData] !== undefined);
 };

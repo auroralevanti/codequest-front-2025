@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
 import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
+
 import { UserData, PostData } from '@/types/api';
+import { apiUrls } from '@/config/api';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -73,7 +75,7 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      const usersResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/users?limit=10&offset=0', {
+      const usersResponse = await fetch(apiUrls.users.list(10, 0), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -88,7 +90,7 @@ export default function AdminDashboardPage() {
       const usersData = await usersResponse.json();
       setUsers(Array.isArray(usersData) ? usersData : []);
 
-      const postsResponse = await fetch('https://codequest-backend-2025.onrender.com/api/v1/posts', {
+      const postsResponse = await fetch(apiUrls.posts.list(), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -127,7 +129,7 @@ export default function AdminDashboardPage() {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/users/${userId}`, {
+        const response = await fetch(apiUrls.users.byId(userId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -159,7 +161,7 @@ export default function AdminDashboardPage() {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(`https://codequest-backend-2025.onrender.com/api/v1/posts/${postId}`, {
+        const response = await fetch(apiUrls.posts.byId(postId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -414,7 +416,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                         <span>Autor: {post.author?.username || 'Desconocido'}</span>
                         <span>Estado: {post.status || 'draft'}</span>
-                        <span>Creado: {new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>Creado: {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '—'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">

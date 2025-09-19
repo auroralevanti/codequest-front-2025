@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { FaHome, FaUsers, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
-import { getUserCookie, removeUserCookie, isAdmin } from '@/lib/cookies';
+import { FaHome, FaUsers, FaFileAlt, FaCog, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
+import { getUserCookie, removeUserCookie, isAdmin, UserData } from '@/lib/cookies';
+
 
 import { AvatarComponent } from '../blog/components/avatar/Avatar';
-import { UserData } from '@/types/api';
+//import { UserData } from '@/types/api';
 
 export default function AdminLayout({
   children,

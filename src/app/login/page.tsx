@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,51 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/types/forms";
 import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
+import { apiUrls } from "@/config/api";
 
-import devi from "../../../public/devi-hello.png";
+// Use image from `public/` via its public path
 
 const LoginPage = () => {
 
   const router = useRouter();
+
+  // If backend redirected here with ?token=..., capture it, store cookie and redirect
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const error = params.get('error');
+
+    if (error === 'discord_auth_failed') {
+      alert('Error en la autenticación con Discord. Por favor, intenta de nuevo.');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (token) {
+      const userId = params.get('userId');
+      const username = params.get('username');
+      const email = params.get('email');
+      const avatar = params.get('avatar');
+      const role = params.get('role');
+
+      // Save user data if available, otherwise save minimal data
+      setUserCookie({
+        id: userId || '',
+        username: username || '',
+        name: username || '',
+        email: email || '',
+        roles: (role as 'admin' | 'user') || 'user',
+        role: (role as 'admin' | 'user') || 'user',
+        avatar: avatar || undefined,
+        token
+      });
+      
+      // Redirect to blog
+      router.push('/blog');
+    }
+  }, [router]);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginForm>();
 
@@ -23,7 +63,7 @@ const LoginPage = () => {
   const submitLogin: SubmitHandler<LoginForm> = async ({ email, password }: LoginForm) => {
     console.log(email, password);
 
-    const url = 'https://codequest-backend-2025.onrender.com/api/v1/auth/login';
+    const url = apiUrls.auth.login();
 
     try {
 
@@ -43,8 +83,10 @@ const LoginPage = () => {
         setUserCookie({
           id: resp.user.id,
           username: resp.user.username,
+          name: resp.user.name || resp.user.username,
           email: resp.user.email,
           roles: resp.user.roles,
+          role: resp.user.role || resp.user.roles,
           avatar: resp.user.avatar,
           token: resp.token
         });
@@ -85,10 +127,10 @@ const LoginPage = () => {
       <div className=" flex flex-col sm:mx-auto sm:w-full sm:max-w-sm border-accent-background border-2 rounded-2xl mt-10 mb-10 justify-center items-center">
         <div className=" mt-10 w-50 pb-10">
           <Image
-            src={devi.src}
-            alt='Devi'
-            width={devi.width}
-            height={devi.height}
+            src="/devi-hello.png"
+            alt="Devi"
+            width={200}
+            height={200}
           />
         </div>
         <div className="flex justify-center text-2xl text-white pb-5">
@@ -141,7 +183,8 @@ const LoginPage = () => {
           <div className="flex text-white mb-10 justify-center items-center">
             <Button
               variant='outline'
-              className="justify-center items-center">
+              className="justify-center items-center"
+              onClick={() => window.location.href = apiUrls.auth.discord()}>
               Discord
             </Button>
           </div>
