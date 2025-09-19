@@ -1,19 +1,15 @@
 "use client"
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 
 type Props = { images?: string[] };
 
 export default function FannedImages({ images = [] }: Props) {
   const n = images.length;
-  if (n === 0) return null;
-
-  // default active index: center on second image when possible so initial view is [0,1,2]
+  
+  // Move all hooks to the top, before any conditional returns
   const [active, setActive] = useState<number>(n > 1 ? 1 : 0);
-
-  const handleClick = (index: number) => {
-    setActive(index);
-  };
 
   // compute visible window according to requested rules
   const visible = useMemo(() => {
@@ -41,8 +37,15 @@ export default function FannedImages({ images = [] }: Props) {
     return ['center'];
   }, [visible, active]);
 
+  // Early return after all hooks are declared
+  if (n === 0) return null;
+
+  const handleClick = (index: number) => {
+    setActive(index);
+  };
+
   // offsets in px for left/right from center — adjusted for better centering
-  const offsetX = 64; // smaller gap so center truly looks centered
+  const offsetX = 64;
   const transforms = {
     left: {
       transform: `translateX(calc(-50% - ${offsetX}px)) rotate(-12deg) translateY(8px)`,
@@ -63,7 +66,7 @@ export default function FannedImages({ images = [] }: Props) {
   const rights = visible.filter((_, i) => slots[i] === 'right');
   const center = visible.filter((_, i) => slots[i] === 'center');
 
-  const renderItem = (v: { src: string; idx: number }, orderIndex: number) => {
+  const renderItem = (v: { src: string; idx: number }) => {
     const slot = v.idx === active ? 'center' : v.idx < active ? 'left' : 'right';
     const style = transforms[slot as keyof typeof transforms];
     return (
@@ -86,9 +89,9 @@ export default function FannedImages({ images = [] }: Props) {
 
   return (
     <div className="relative flex justify-center items-center h-64">
-      {lefts.map((v, i) => renderItem(v, i))}
-      {rights.map((v, i) => renderItem(v, i + lefts.length))}
-      {center.map((v, i) => renderItem(v, i + lefts.length + rights.length))}
+      {lefts.map((v) => renderItem(v))}
+      {rights.map((v) => renderItem(v))}
+      {center.map((v) => renderItem(v))}
     </div>
   );
 }
