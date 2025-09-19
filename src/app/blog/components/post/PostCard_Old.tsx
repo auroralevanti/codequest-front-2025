@@ -7,7 +7,7 @@ import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineHeart } from "react-icons/ai";
 import { FaComment } from "react-icons/fa";
 import Link from "next/link";
-import { CommentsSection } from "../comments";
+import { CommentsSection } from "../comment/CommentsSection";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 

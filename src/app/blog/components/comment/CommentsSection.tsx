@@ -63,7 +63,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     const newComment: Comment = {
       id: Date.now().toString(),
       postId,
-      username: data.username,
+      author: data.author,
       content: data.content,
       createdAt: new Date().toISOString(),
       likes: 0,
@@ -77,11 +77,12 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     setComments(prev => 
       prev.map(comment => {
         if (comment.id === commentId) {
-          return {
-            ...comment,
-            isLiked: !comment.isLiked,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-          };
+            const currentLikes = comment.likes ?? 0;
+            return {
+              ...comment,
+              isLiked: !comment.isLiked,
+              likes: comment.isLiked ? currentLikes - 1 : currentLikes + 1
+            };
         }
         return comment;
       })
@@ -104,9 +105,10 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     setComments(prev => 
       prev.map(comment => {
         if (comment.id === parentId) {
+          const currentReplies = comment.replies ?? [];
           return {
             ...comment,
-            replies: [...comment.replies, newReply]
+            replies: [...currentReplies, newReply]
           };
         }
         return comment;

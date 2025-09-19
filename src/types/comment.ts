@@ -1,6 +1,9 @@
 export type Comment = {
   id: string;
-  author: string;
+  postId?: string;
+  parentId?: string;
+  username?: string;
+  author?: string;
   content: string;
   createdAt: string;
   isLiked?: boolean;
