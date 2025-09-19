@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import FannedImages from './FannedImages';
 import CommentList from '../comment/CommentList';
+import { CommentsSection } from '../comment/CommentsSection';
+import { getUserCookie } from '@/lib/cookies';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
 
 type User = { id: string; username: string; avatarUrl?: string };
 
-type Props = { user: User; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
+type Props = { postId?: string; user: User; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
 
 type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -25,15 +27,11 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: Ico
   );
 }
 
-export default function PostCard({ user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
-  const mockComments = [
-    { id: 'c1', user: { id: 'u2', username: 'James Dias', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Hola Devi', createdAt: '12h ago' },
-    { id: 'c2', user: { id: 'u3', username: 'Tiana Bergson', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Nice post!', createdAt: '19h ago' },
-    { id: 'c3', user: { id: 'u4', username: 'Kadin Bator', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' }, body: 'Great pictures', createdAt: 'Yesterday' },
-  ];
+export default function PostCard({ postId, user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
     
   const [showComments, setShowComments] = useState(false);
   const commentsRef = React.useRef<HTMLDivElement | null>(null);
+  const currentUser = getUserCookie()?.username || getUserCookie()?.name || 'Usuario';
   return (
     <div className="bg-background-light dark:bg-background-dark p-4">
       <div className="flex justify-between items-center mb-4">
@@ -74,9 +72,11 @@ export default function PostCard({ user, createdAt, body, images = [], likes = 0
               className="overflow-hidden"
             >
               <div ref={commentsRef}>
-                <CommentList
-                  items={mockComments}
-                />
+                {postId ? (
+                  <CommentsSection postId={postId} currentUser={currentUser} />
+                ) : (
+                  <CommentList items={[]} />
+                )}
               </div>
             </motion.div>
           )}

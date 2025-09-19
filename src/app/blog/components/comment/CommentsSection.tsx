@@ -5,6 +5,8 @@ import { Comment } from '@/types/comment';
 import { Comment as CommentComponent } from './Comment_Old';
 import { CommentForm } from './CommentForm';
 import { Separator } from '@radix-ui/react-separator';
+import { apiUrls } from '@/config/api';
+import { getUserCookie } from '@/lib/cookies';
 
 interface CommentsSectionProps {
   postId: string;
@@ -52,11 +54,25 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setComments(mockComments.filter(comment => comment.postId === postId));
-      setLoading(false);
-    }, 500);
+    const fetchComments = async () => {
+      try {
+        setLoading(true);
+        const token = getUserCookie()?.token;
+        const res = await fetch(`${apiUrls.posts.byId(postId)}/comments`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error('Failed to fetch comments');
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : data.items || data.comments || [];
+        setComments(list);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComments();
   }, [postId]);
 
   const handleAddComment = (data: { content: string; author: string }) => {

@@ -1,8 +1,10 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CategoriesBadge } from './components/categories/CategoriesBadge';
 import PostCard from './components/post/PostCard';
 import CommentList from './components/comment/CommentList';
+import { apiUrls } from '@/config/api';
+import { getUserCookie } from '@/lib/cookies';
 
 const mockUser = { id: 'u1', username: 'Jordyn George', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' };
 const mockPost = {
@@ -24,6 +26,32 @@ const mockPost = {
 };
 
 export default function BlogPage() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const token = getUserCookie()?.token;
+        const res = await fetch(apiUrls.posts.list(), {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error('Failed to fetch posts');
+        const data = await res.json();
+        // Assume API returns { posts: [...] } or an array
+        const list = Array.isArray(data) ? data : data.posts || [];
+        setPosts(list);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white dark:bg-background-dark text-text-light dark:text-text-dark">
       <div className="max-w-md mx-auto py-8">
@@ -31,7 +59,13 @@ export default function BlogPage() {
           <CategoriesBadge />
         </div>
 
-        <PostCard user={mockPost.user} createdAt={mockPost.createdAt} body={mockPost.body} images={mockPost.images} likes={mockPost.likes} comments={mockPost.comments} />
+        {loading ? (
+          <div>Loading posts...</div>
+        ) : (
+          posts.map((p) => (
+            <PostCard key={p.id} postId={p.id} user={p.author} createdAt={p.createdAt} body={p.body || p.content} images={p.images || []} likes={p.likes || 0} comments={p.commentsCount || 0} />
+          ))
+        )}
       </div>
     </div>
   );
