@@ -33,7 +33,7 @@ export default function PostCard({ postId, user, createdAt, body, images = [], l
   const commentsRef = React.useRef<HTMLDivElement | null>(null);
   const currentUser = getUserCookie()?.username || getUserCookie()?.name || 'Usuario';
   return (
-    <div className="bg-background-light dark:bg-background-dark p-4">
+    <div className="bg-background-light dark:bg-background-dark p-4 border-b border-light-token dark:border-dark-token last:border-b-0">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <img alt={`${user.username} profile`} src={user.avatarUrl || undefined} className="w-12 h-12 rounded-full mr-3" />
