@@ -35,7 +35,7 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
                     'Content-Type': 'application/json',
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                   },
-                  body: JSON.stringify({ title: title.trim(), body: text.trim(), status: 'published' }),
+                  body: JSON.stringify({ title: title.trim(), content: text.trim(), status: 'published' }),
                 });
                 if (!res.ok) {
                   const err = await res.text();
@@ -63,7 +63,7 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
           <UserBadge />
           <input
             className="w-full mt-3 bg-transparent border-0 focus:ring-0 p-0 text-xl font-semibold text-text-light dark:text-text-dark placeholder-subtext-light dark:placeholder-subtext-dark outline-none"
-            placeholder="Título del post"
+            placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
