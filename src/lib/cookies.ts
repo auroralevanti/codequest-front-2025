@@ -3,10 +3,8 @@
 export interface UserData {
   id: string;
   username?: string;
-  name?: string;
   email: string;
   roles?: 'admin' | 'user';
-  role?: 'admin' | 'user';
   avatar?: string;
   token?: string;
 }
@@ -93,14 +91,14 @@ export const hasRole = (requiredRole: 'admin' | 'user'): boolean => {
   return getUserRole() === requiredRole;
 };
 
-// Get user display info (useful for UI components)
-export const getUserDisplayInfo = (): { name: string; role: string; avatar?: string } | null => {
+
+export const getUserDisplayInfo = (): { username: string; roles: string; avatar?: string } | null => {
   const userData = getUserCookie();
   if (!userData) return null;
   
   return {
-    name: userData.username || userData.name || '',
-    role: userData.roles || userData.role || 'user',
+    username: userData.username || '',
+    roles: userData.roles || userData.roles || 'user',
     avatar: userData.avatar
   };
 };

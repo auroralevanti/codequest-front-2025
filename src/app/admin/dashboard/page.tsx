@@ -2,19 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@radix-ui/react-separator';
-import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaPlus, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
-import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
+import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock } from 'react-icons/fa';
+
+import { getUserCookie, isAdmin, isUserLoggedIn, UserData } from '@/lib/cookies';
 import { apiUrls } from '@/config/api';
+import { AdminPost } from "../../../types/posts";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -23,38 +25,34 @@ export default function AdminDashboardPage() {
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [newAdminData, setNewAdminData] = useState();
 
-  // Authentication check
+
   useEffect(() => {
     const checkAdminAccess = async () => {
-      // Ensure we're on the client side
       if (typeof window === 'undefined') return;
       
       setAuthLoading(true);
       
-      // Debug: Log cookie data
       const userData = getUserCookie();
-      console.log('=== DEBUG ADMIN ACCESS ===');
       console.log('User Data from Cookie:', userData);
       console.log('User Role:', userData?.roles);
       console.log('Is User Logged In:', isUserLoggedIn());
       console.log('Is Admin:', isAdmin());
-      console.log('========================');
+      console.log('Rol: ', userData?.roles);
       
-      // Check if user is logged in
+
       if (!isUserLoggedIn()) {
-        console.log('User not logged in, redirecting to login');
-        router.push('/login');
+        console.log('Debe ingresar en el formulario');
+        router.push('/admin');
         return;
       }
 
-      // Check if user is admin
       if (!isAdmin()) {
-        console.log('User is not admin, redirecting to home');
-        router.push('/'); // Redirect to home or show unauthorized page
+        console.log('Usuario no es administrador');
+        router.push('/');
         return;
       }
 
-      console.log('Admin access granted');
+      console.log('Acceso exitoso de usuario');
       setIsAuthorized(true);
       setAuthLoading(false);
     };
@@ -62,14 +60,13 @@ export default function AdminDashboardPage() {
     checkAdminAccess();
   }, [router]);
 
-  // Get user data for display (only when authorized)
+
   const userData = isAuthorized ? getUserCookie() : null;
-  const username = userData?.username;
   const token = userData?.token;
   console.log('admin token: ', token)
 
   useEffect(() => {
-    // Only fetch data if auth check is complete and user is authorized
+
     if (!authLoading && isAuthorized) {
       fetchData();
     }
@@ -82,7 +79,7 @@ export default function AdminDashboardPage() {
      console.log('token de admin: ', token)
       
       if (!token) {
-        console.error('No admin token available');
+        console.error('No se encuentra info de administrador');
         router.push('/login');
         return;
       }
@@ -103,7 +100,6 @@ export default function AdminDashboardPage() {
       //console.log('Usuarios: ', usersData);
       setUsers(usersData || []);
 
-      // Fetch posts
       const postsResponse = await fetch(apiUrls.posts.list(), {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -422,9 +418,9 @@ export default function AdminDashboardPage() {
                         {post.content?.substring(0, 100)}...
                       </p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                        <span>Autor: {post.author?.username || 'Desconocido'}</span>
-                        <span>Estado: {post.status || 'draft'}</span>
-                        <span>Creado: {new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>Autor: { post.author?.username || 'Desconocido' }</span>
+                        <span>Estado: { post.status || 'draft' }</span>
+                        <span>Creado: { post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Fecha no disponible' }</span>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">

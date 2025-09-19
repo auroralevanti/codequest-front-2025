@@ -20,7 +20,7 @@ export interface NewPostForm {
   slug:        string;
   status:      string;
   category:    string;
-  tagIds?:     string []
+  tagIds?:     string [];
 };
 
 // New Comment
