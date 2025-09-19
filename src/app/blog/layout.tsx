@@ -140,7 +140,6 @@ export default function DashboardLayout({
       <PostModal
         isOpen={isPostModalOpen}
         onClose={() => setIsPostModalOpen(false)}
-        currentUser={user?.name || 'Usuario'}
       />
 
       {/* Mobile floating add button */}
