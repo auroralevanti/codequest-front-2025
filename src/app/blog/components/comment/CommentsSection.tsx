@@ -108,18 +108,24 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
           const createdAt = (c['createdAt'] as string) || (c['created_at'] as string) || new Date().toISOString();
           const isLiked = (c['isLiked'] as boolean) ?? (c['isLikedByUser'] as boolean) ?? false;
           const likes = (c['likes'] as number) ?? (c['likesCount'] as number) ?? (c['likesCountTotal'] as number) ?? 0;
-          const replies = Array.isArray(c['replies']) ? (c['replies'] as unknown[]).map((r) => ({
-            id: String((r as Record<string, unknown>)['id'] ?? ''),
-            postId: String(((r as Record<string, unknown>)['postId'] ?? (r as Record<string, unknown>)['post_id']) ?? ''),
-            parentId: String((r as Record<string, unknown>)['parentId'] ?? (r as Record<string, unknown>)['parent_comment_id'] ?? '') || undefined,
-            author: String((r as Record<string, unknown>)['author'] ?? (r as Record<string, unknown>)['username'] ?? 'Usuario'),
-            avatarUrl: (r as Record<string, unknown>)['avatarUrl'] as string | undefined,
-            content: String((r as Record<string, unknown>)['content'] ?? (r as Record<string, unknown>)['body'] ?? ''),
-            createdAt: String((r as Record<string, unknown>)['createdAt'] ?? (r as Record<string, unknown>)['created_at'] ?? new Date().toISOString()),
-            isLiked: Boolean((r as Record<string, unknown>)['isLiked'] ?? (r as Record<string, unknown>)['isLikedByUser'] ?? false),
-            likes: Number((r as Record<string, unknown>)['likes'] ?? (r as Record<string, unknown>)['likesCount'] ?? 0),
-            replies: [],
-          })) : [];
+          const replies = Array.isArray(c['replies']) ? (c['replies'] as unknown[]).map((r) => {
+            const rr = r as Record<string, unknown>;
+            const authorObj = rr['author'] as Record<string, unknown> | undefined;
+            const authorName = (authorObj && ((authorObj['username'] as string) || (authorObj['name'] as string))) || (rr['username'] as string) || 'Usuario';
+            const avatar = (authorObj && (authorObj['avatarUrl'] as string)) || (rr['authorAvatar'] as string) || (rr['avatarUrl'] as string) || undefined;
+            return {
+              id: String(rr['id'] ?? ''),
+              postId: String((rr['postId'] ?? rr['post_id']) ?? ''),
+              parentId: String((rr['parentId'] ?? rr['parent_comment_id']) ?? '') || undefined,
+              author: String(authorName),
+              avatarUrl: avatar,
+              content: String(rr['content'] ?? rr['body'] ?? ''),
+              createdAt: String(rr['createdAt'] ?? rr['created_at'] ?? new Date().toISOString()),
+              isLiked: Boolean(rr['isLiked'] ?? rr['isLikedByUser'] ?? false),
+              likes: Number(rr['likes'] ?? rr['likesCount'] ?? 0),
+              replies: [],
+            };
+          }) : [];
 
           return {
             id,
@@ -151,18 +157,24 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
               else if (repliesData && typeof repliesData === 'object' && Array.isArray((repliesData as Record<string, unknown>).comments)) rlist = (repliesData as Record<string, unknown>).comments as Array<Record<string, unknown>>;
               else rlist = [];
 
-              const normalizedReplies = rlist.map((c) => ({
-                id: String(c['id'] ?? ''),
-                postId: String(c['postId'] ?? c['post_id'] ?? ''),
-                parentId: String(c['parentCommentId'] ?? c['parentId'] ?? c['parent_comment_id'] ?? '') || undefined,
-                author: (c['author'] && ((c['author'] as any).username || (c['author'] as any).name)) || c['username'] || 'Usuario',
-                avatarUrl: (c['author'] && (c['author'] as any).avatarUrl) || c['authorAvatar'] || c['avatarUrl'] || undefined,
-                content: (c['content'] as string) || (c['body'] as string) || '',
-                createdAt: (c['createdAt'] as string) || (c['created_at'] as string) || new Date().toISOString(),
-                isLiked: Boolean(c['isLiked'] ?? c['isLikedByUser'] ?? false),
-                likes: Number(c['likes'] ?? c['likesCount'] ?? 0),
-                replies: [],
-              }));
+              const normalizedReplies = rlist.map((c) => {
+                const cc = c as Record<string, unknown>;
+                const authorObj = cc['author'] as Record<string, unknown> | undefined;
+                const authorName = (authorObj && ((authorObj['username'] as string) || (authorObj['name'] as string))) || (cc['username'] as string) || 'Usuario';
+                const avatar = (authorObj && (authorObj['avatarUrl'] as string)) || (cc['authorAvatar'] as string) || (cc['avatarUrl'] as string) || undefined;
+                return {
+                  id: String(cc['id'] ?? ''),
+                  postId: String(cc['postId'] ?? cc['post_id'] ?? ''),
+                  parentId: String(cc['parentCommentId'] ?? cc['parentId'] ?? cc['parent_comment_id'] ?? '') || undefined,
+                  author: String(authorName),
+                  avatarUrl: avatar,
+                  content: (cc['content'] as string) || (cc['body'] as string) || '',
+                  createdAt: (cc['createdAt'] as string) || (cc['created_at'] as string) || new Date().toISOString(),
+                  isLiked: Boolean(cc['isLiked'] ?? cc['isLikedByUser'] ?? false),
+                  likes: Number(cc['likes'] ?? cc['likesCount'] ?? 0),
+                  replies: [] as NormalizedComment[],
+                };
+              });
 
               return { ...parent, replies: normalizedReplies } as NormalizedComment;
             } catch (e) {
@@ -257,18 +269,24 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
             else if (repliesData && typeof repliesData === 'object' && Array.isArray((repliesData as Record<string, unknown>).comments)) rlist = (repliesData as Record<string, unknown>).comments as Array<Record<string, unknown>>;
             else rlist = [];
 
-            const normalizedReplies = rlist.map((c) => ({
-              id: String(c['id'] ?? ''),
-              postId: String(c['postId'] ?? c['post_id'] ?? ''),
-              parentId: String(c['parentCommentId'] ?? c['parentId'] ?? c['parent_comment_id'] ?? '') || undefined,
-              author: (c['author'] && ((c['author'] as any).username || (c['author'] as any).name)) || c['username'] || 'Usuario',
-              avatarUrl: (c['author'] && (c['author'] as any).avatarUrl) || c['authorAvatar'] || c['avatarUrl'] || undefined,
-              content: (c['content'] as string) || (c['body'] as string) || '',
-              createdAt: (c['createdAt'] as string) || (c['created_at'] as string) || new Date().toISOString(),
-              isLiked: Boolean(c['isLiked'] ?? c['isLikedByUser'] ?? false),
-              likes: Number(c['likes'] ?? c['likesCount'] ?? 0),
-              replies: [],
-            }));
+            const normalizedReplies = rlist.map((c) => {
+              const cc = c as Record<string, unknown>;
+              const authorObj = cc['author'] as Record<string, unknown> | undefined;
+              const authorName = (authorObj && ((authorObj['username'] as string) || (authorObj['name'] as string))) || (cc['username'] as string) || 'Usuario';
+              const avatar = (authorObj && (authorObj['avatarUrl'] as string)) || (cc['authorAvatar'] as string) || (cc['avatarUrl'] as string) || undefined;
+              return {
+                id: String(cc['id'] ?? ''),
+                postId: String(cc['postId'] ?? cc['post_id'] ?? ''),
+                parentId: String(cc['parentCommentId'] ?? cc['parentId'] ?? cc['parent_comment_id'] ?? '') || undefined,
+                author: String(authorName),
+                avatarUrl: avatar,
+                content: (cc['content'] as string) || (cc['body'] as string) || '',
+                createdAt: (cc['createdAt'] as string) || (cc['created_at'] as string) || new Date().toISOString(),
+                isLiked: Boolean(cc['isLiked'] ?? cc['isLikedByUser'] ?? false),
+                likes: Number(cc['likes'] ?? cc['likesCount'] ?? 0),
+                replies: [] as NormalizedComment[],
+              };
+            });
 
             return { ...parent, replies: normalizedReplies } as NormalizedComment;
           } catch (e) {
