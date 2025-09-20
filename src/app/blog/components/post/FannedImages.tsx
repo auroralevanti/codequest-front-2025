@@ -45,15 +45,15 @@ export default function FannedImages({ images = [] }: Props) {
   const transforms = {
     left: {
       transform: `translateX(calc(-50% - ${offsetX}px)) rotate(-12deg) translateY(8px)`,
-      zIndex: 10,
+      zClass: 'z-10',
     },
     center: {
       transform: `translateX(-50%) translateY(-8px) scale(1.08) rotate(0deg)`,
-      zIndex: 60,
+      zClass: 'z-20',
     },
     right: {
       transform: `translateX(calc(-50% + ${offsetX}px)) rotate(12deg) translateY(8px)`,
-      zIndex: 10,
+      zClass: 'z-10',
     },
   } as const;
 
@@ -70,8 +70,8 @@ export default function FannedImages({ images = [] }: Props) {
         key={v.idx}
         onClick={() => handleClick(v.idx)}
         aria-pressed={v.idx === active}
-        className="appearance-none bg-transparent p-0 border-0 absolute"
-        style={{ cursor: 'pointer', left: '50%', transform: style.transform, zIndex: style.zIndex }}
+        className={`appearance-none bg-transparent p-0 border-0 absolute left-1/2 transform-none ${style.zClass}`}
+        style={{ cursor: 'pointer', transform: style.transform }}
       >
         <img
           src={v.src}
@@ -84,10 +84,11 @@ export default function FannedImages({ images = [] }: Props) {
   };
 
   return (
-    <div className="relative flex justify-center items-center h-64">
-  {lefts.map((v) => renderItem(v))}
-  {rights.map((v) => renderItem(v))}
-  {center.map((v) => renderItem(v))}
+    // `isolate` creates a new stacking context so internal z-indexes won't escape
+    <div className="relative flex justify-center items-center h-64 isolate z-0">
+      {lefts.map((v) => renderItem(v))}
+      {rights.map((v) => renderItem(v))}
+      {center.map((v) => renderItem(v))}
     </div>
   );
 }
