@@ -47,7 +47,11 @@ export default function PostCard({ postId, user, title, createdAt, body, images 
 
       <div className="mb-4">
         {/** Post title */}
-        {Boolean(title) && <h3 className="font-semibold text-lg text-text-light dark:text-text-dark mb-2">{title}</h3>}
+        {Boolean(title) && (
+          <h3 title={String(title)} className="font-semibold text-lg text-text-light dark:text-text-dark mb-2 truncate">
+            {title}
+          </h3>
+        )}
         <p className="text-text-light dark:text-text-dark mb-4">{body}</p>
         <FannedImages images={images} />
       </div>
