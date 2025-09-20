@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
-import { LoginForm } from "@/types/forms";
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiUrls } from "@/config/api";
 
 interface RegisterForm {
   username: string;
   email: string;
   password: string;
-  avatarUrl?: string;
+  avatar?: FileList;
   roles?: string;
 }
 
@@ -28,20 +28,30 @@ export default function RegisterNewUserPage() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<RegisterForm>();
   
   
-  const submitLogin: SubmitHandler<RegisterForm> = async ({ username, email, password }: RegisterForm) => {
+  const submitLogin: SubmitHandler<RegisterForm> = async ({ username, email, password, avatar }: RegisterForm) => {
   console.log(username, email, password);
   const roles = 'user';
   
   const url = apiUrls.auth.signup();
   
   try {
-    
+    let uploadedAvatar: string | undefined = undefined;
+    const file = avatar && avatar.length > 0 ? avatar[0] : undefined;
+    if (file) {
+      try {
+        uploadedAvatar = await uploadToCloudinary(file as File);
+      } catch (err) {
+        console.error('Avatar upload failed', err);
+        alert('Failed to upload avatar');
+      }
+    }
+
     const toLogin = await fetch( url, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json'
       },
-      body: JSON.stringify({username, email, password, roles})
+      body: JSON.stringify({username, email, password, roles, avatar: uploadedAvatar})
     });
   
     const resp = await toLogin.json();
@@ -146,6 +156,15 @@ export default function RegisterNewUserPage() {
             >
             </Input>
             { errors.password && (<p className="text-red-500 text-sm mt-1">{errors.password.message}</p>) }
+            <div className="mt-3">
+              <label className="text-sm text-white">Avatar (opcional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                {...register('avatar')}
+                className="block w-full text-sm text-white mt-1"
+              />
+            </div>
             <div className="flex justify-center">
               <Button 
               className="bg-accent-background mt-5 mb-5"

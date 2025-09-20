@@ -1,10 +1,11 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import UserBadge from './UserBadge';
 import { Button } from '@/components/ui/button';
 import { MdClose, MdAttachFile, MdCategory, MdLabel } from 'react-icons/md';
 import { apiUrls } from '@/config/api';
 import { getUserCookie } from '@/lib/cookies';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 export default function CreatePost({ onClose }: { onClose?: () => void }) {
   const [text, setText] = useState('');
@@ -17,6 +18,32 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const results = await Promise.allSettled(files.map(f => uploadToCloudinary(f)));
+      const successUrls = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<string>).value);
+      const failedCount = results.filter(r => r.status === 'rejected').length;
+      if (failedCount) {
+        alert(`${failedCount} image(s) failed to upload`);
+      }
+      if (successUrls.length) {
+        setImages(prev => [...prev, ...successUrls]);
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+      alert('Image upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -58,9 +85,10 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
             <MdClose />
           </button>
           <h1 className="text-lg font-semibold text-text-light dark:text-text-dark">Create Post</h1>
-          <Button
+              <Button
             onClick={async () => {
               if (submitting) return;
+              if (isUploading) return;
               if (!title.trim() && !text.trim()) {
                 alert('Please add a title or content for the post.');
                 return;
@@ -68,13 +96,18 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
               setSubmitting(true);
               try {
                 const token = getUserCookie()?.token;
+                const payload: Record<string, unknown> = { title: title.trim(), content: text.trim(), status: 'published' };
+                if (selectedCategoryId) payload.categoryIds = [selectedCategoryId];
+                if (selectedTagIds.length) payload.tagIds = selectedTagIds;
+                if (images.length) payload.images = images;
+
                 const res = await fetch(apiUrls.posts.create(), {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                   },
-                  body: JSON.stringify({ title: title.trim(), content: text.trim(), status: 'published', categoryIds: selectedCategoryId ? [selectedCategoryId] : undefined, tagIds: selectedTagIds.length ? selectedTagIds : undefined }),
+                  body: JSON.stringify(payload),
                 });
                 if (!res.ok) {
                   const err = await res.text();
@@ -92,7 +125,7 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
                 setSubmitting(false);
               }
             }}
-            disabled={submitting || (!title.trim() && !text.trim())}
+            disabled={submitting || isUploading || (!title.trim() && !text.trim())}
             className="bg-white text-black font-medium py-1.5 px-4 rounded-full text-sm hover:bg-green-600 hover:text-white transition-colors"
           >
             {submitting ? 'Posting...' : 'Post'}
@@ -113,6 +146,42 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+
+          <div className="mt-3">
+            <label className="text-sm text-subtext-light dark:text-subtext-dark mb-1 block">Images</label>
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+                  await handleFiles(files);
+                  // clear input
+                  (e.target as HTMLInputElement).value = '';
+                }}
+                className="hidden"
+              />
+              {isUploading && <span className="text-sm text-gray-500">Uploading...</span>}
+            </div>
+            <div className="mt-2 flex gap-2">
+              {images.map((src, i) => (
+                <div key={i} className="relative w-20 h-20">
+                  <img src={src} alt={`uploaded-${i}`} className="w-20 h-20 object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    aria-label={`Remove image ${i + 1}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </main>
 
         <footer className="bg-background-light dark:bg-background-dark rounded-t-2xl shadow-lg">
@@ -125,7 +194,7 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
             <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
-                onClick={() => alert('Attachment flow not implemented yet')}
+                onClick={() => fileInputRef.current?.click()}
                 title="Attachment"
                 aria-label="Attachment"
                 className="flex items-center justify-center p-3 bg-card-light dark:bg-card-dark rounded-lg border border-border-light dark:border-border-dark border-light-token"
