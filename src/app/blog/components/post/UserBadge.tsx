@@ -19,4 +19,4 @@ export default function UserBadge({ user }: { user?: Partial<UserData> }) {
       </div>
     </div>
   );
-}
+} 

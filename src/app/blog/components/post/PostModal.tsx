@@ -10,6 +10,7 @@ interface PostModalProps {
 }
 
 export const PostModal = ({ isOpen, onClose }: PostModalProps) => {
+  
   return (
     <AnimatePresence>
       {isOpen && (
