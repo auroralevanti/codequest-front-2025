@@ -1,11 +1,14 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
+
 import FannedImages from './FannedImages';
 import CommentList from '../comment/CommentList';
 import { CommentsSection } from '../comment/CommentsSection';
 import { getUserCookie } from '@/lib/cookies';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
+import { AvatarComponent } from '../avatar/Avatar';
 
 type User = { id: string; username: string; avatarUrl?: string };
 
@@ -30,23 +33,27 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: Ico
 export default function PostCard({ postId, user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
     
   const [showComments, setShowComments] = useState(false);
-  const commentsRef = React.useRef<HTMLDivElement | null>(null);
+  const commentsRef = useRef<HTMLDivElement | null>(null);
   const currentUser = getUserCookie()?.username || getUserCookie()?.name || 'Usuario';
+
+
   return (
-    <div className="bg-background-light dark:bg-background-dark p-4 border-b border-light-token dark:border-dark-token last:border-b-0">
+    <div className="bg-white p-4 border-20 border-accent-background">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
-          <img alt={`${user.username} profile`} src={user.avatarUrl || undefined} className="w-12 h-12 rounded-full mr-3" />
+          <div className='mr-2'>
+          <AvatarComponent />
+          </div>
           <div>
-            <p className="font-bold text-text-light dark:text-text-dark">{user.username}</p>
-            <p className="text-sm text-secondary-light dark:text-secondary-dark">{createdAt}</p>
+            <p className="font-bold text-black mb-1">{user.username}</p>
+            <p className="text-sm text-black">{createdAt}</p>
           </div>
         </div>
-        <button className="bg-primary text-white px-4 py-1.5 rounded-full font-semibold text-sm">Following</button>
+        <button className="bg-primary text-black px-4 py-1.5 rounded-full font-semibold text-sm">Following</button>
       </div>
 
       <div className="mb-4">
-        <p className="text-text-light dark:text-text-dark mb-4">{body}</p>
+        <p className="text-black mb-4">{body}</p>
         <FannedImages images={images} />
       </div>
 
