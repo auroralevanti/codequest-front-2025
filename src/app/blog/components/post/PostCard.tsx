@@ -9,7 +9,7 @@ import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md'
 
 type User = { id: string; username: string; avatarUrl?: string };
 
-type Props = { postId?: string; user: User; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
+type Props = { postId?: string; user: User; title?: string; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
 
 type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -27,7 +27,7 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: Ico
   );
 }
 
-export default function PostCard({ postId, user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
+export default function PostCard({ postId, user, title, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
     
   const [showComments, setShowComments] = useState(false);
   const commentsRef = React.useRef<HTMLDivElement | null>(null);
@@ -46,6 +46,8 @@ export default function PostCard({ postId, user, createdAt, body, images = [], l
       </div>
 
       <div className="mb-4">
+        {/** Post title */}
+        {Boolean(title) && <h3 className="font-semibold text-lg text-text-light dark:text-text-dark mb-2">{title}</h3>}
         <p className="text-text-light dark:text-text-dark mb-4">{body}</p>
         <FannedImages images={images} />
       </div>
@@ -69,7 +71,7 @@ export default function PostCard({ postId, user, createdAt, body, images = [], l
               animate={{ opacity: 1, height: 'auto', translateY: 0 }}
               exit={{ opacity: 0, height: 0, translateY: -8 }}
               transition={{ duration: 0.28, ease: [0.2, 0.9, 0.3, 1] }}
-              className="overflow-hidden"
+              className="overflow-auto"
             >
               <div ref={commentsRef}>
                 {postId ? (
