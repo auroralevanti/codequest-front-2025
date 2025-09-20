@@ -6,7 +6,7 @@ export default function DashboardLayout({
   return (
     <>
 
-      <div className="h-screen bg-darker-purple">
+      <div className="flex min-h-screen bg-darker-purple items-center justify-center">
         <div className="h-full">
           { children }
         </div>

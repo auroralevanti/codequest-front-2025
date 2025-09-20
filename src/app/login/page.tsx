@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/types/forms";
 import { Separator } from "@radix-ui/react-separator";
+
 import { setUserCookie } from "@/lib/cookies";
 import { apiUrls } from "@/config/api";
 
-// Use image from `public/` via its public path
+import devi from "../../../public/login-desktop1.png";
+import devimobile from "../../../public/login-mobile1.png";
 
 const LoginPage = () => {
 
@@ -51,7 +53,7 @@ const LoginPage = () => {
         avatar: avatar || undefined,
         token
       });
-      
+
       // Redirect to blog
       router.push('/blog');
     }
@@ -77,9 +79,9 @@ const LoginPage = () => {
 
       const resp = await toLogin.json();
       console.log(resp);
-      
+
       if (resp && resp.user && resp.token) {
-   
+
         setUserCookie({
           id: resp.user.id,
           username: resp.user.username,
@@ -90,7 +92,7 @@ const LoginPage = () => {
           avatar: resp.user.avatar,
           token: resp.token
         });
-        
+
         console.log('User data saved to cookies:', resp.user);
         router.push('/blog');
         return;
@@ -123,24 +125,36 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex h-full">
-      <div className=" flex flex-col sm:mx-auto sm:w-full sm:max-w-sm border-accent-background border-2 rounded-2xl mt-10 mb-10 justify-center items-center">
-        <div className=" mt-10 w-50 pb-10">
-          <Image
-            src="/devi-hello.png"
-            alt="Devi"
-            width={200}
-            height={200}
-          />
-        </div>
-        <div className="flex justify-center text-2xl text-white pb-5">
-          <b>Ingresar al blog de DevTalles</b>
-        </div>
-        <div>
-          <form onSubmit={handleSubmit(submitLogin)}>
+    <div className="flex max-w-5xl w-full items-center justify-between relative flex-col md:flex-row">
+      <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+        <Image
+          src={devi.src}
+          alt='Devi'
+          width={devi.width}
+          height={devi.height}
+          className="h-auto w-auto hidden md:block"
+          priority
+        />
+        <Image
+          src={devimobile.src}
+          alt='Devi'
+          width={devimobile.width}
+          height={devimobile.height}
+          className="h-auto w-auto block md:hidden"
+          priority
+        />
+      </div>
+      <div className="w-full  md:w-5xl max-w-md bg-gray-100 rounded-2xl p-8 shadow -mt-90 md:mt-0 md:-ml-60 z-10">
+        <p className="text-2xl font-bold text-center">Ingresar al blog de DevTalles</p>
+
+        <div className="mt-10">
+          <form
+            onSubmit={handleSubmit(submitLogin)}>
             <Input
-              className="text-white mt-2"
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black mb-4"
               placeholder="Correo Electronico"
+              type='email'
+              aria-placeholder="Coloca tu correo electrónico"
               {...register('email', {
                 required: 'Campo obligatorio',
                 pattern: {
@@ -152,9 +166,10 @@ const LoginPage = () => {
             </Input>
             {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
             <Input
-              className="text-white mt-2 w-<70>"
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black mb-4"
               placeholder="Contraseña"
               type='password'
+              aria-placeholder="Coloca el password ya creado"
               {...register('password', {
                 required: 'Campo obligatorio',
                 minLength: {
@@ -176,9 +191,9 @@ const LoginPage = () => {
             </div>
           </form>
           <div className="flex items-center mb-5">
-            <Separator className="flex-grow border-gray-300 border-1 mr-1" />
-            <span className="text-white">&nbsp; o continua con &nbsp;</span>
-            <Separator className="flex-grow border-gray-300 border-1 ml-1" />
+            <Separator className="flex-grow border-gray-400 border-1 mr-1" />
+            <span className="text-gray-400">&nbsp; o continua con &nbsp;</span>
+            <Separator className="flex-grow border-gray-400 border-1 ml-1" />
           </div>
           <div className="flex text-white mb-10 justify-center items-center">
             <Button
@@ -189,9 +204,9 @@ const LoginPage = () => {
             </Button>
           </div>
           <div className="flex flex-row mb-10">
-            <p className="text-white">¿Quieres ser miembro? &nbsp;</p>
+            <p className="text-gray-600">¿Quieres ser miembro? &nbsp;</p>
             <Link href='/register' passHref>
-              <p className="text-accent-background font-bold">Inicia el Registro gratis</p>
+              <p className="text-darker-purple font-bold">Inicia el Registro gratis</p>
             </Link>
           </div>
         </div>
