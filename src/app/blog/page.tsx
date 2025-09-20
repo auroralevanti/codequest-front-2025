@@ -13,6 +13,7 @@ export default function BlogPage() {
     id: string;
     author?: { id?: string; username?: string; avatarUrl?: string };
     createdAt?: string;
+    title?: string;
     body?: string;
     content?: string;
     images?: string[];
@@ -66,6 +67,7 @@ export default function BlogPage() {
                   : { id: '', username: 'Unknown', avatarUrl: undefined }
               }
               createdAt={p.createdAt}
+              title={p.title}
               body={p.body || p.content}
               images={p.images || []}
               likes={p.likes || 0}

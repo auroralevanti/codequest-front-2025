@@ -20,7 +20,8 @@ export const CommentForm = ({ onSubmit, currentUser }: CommentFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.content.trim()) {
-      onSubmit(formData);
+      // ensure author is currentUser when submitting
+      onSubmit({ ...formData, author: currentUser });
       setFormData({ ...formData, content: '' });
     }
   };
@@ -39,16 +40,6 @@ export const CommentForm = ({ onSubmit, currentUser }: CommentFormProps) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Input
-              type="text"
-              name="author"
-              placeholder="Tu nombre"
-              value={formData.author}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
           <div>
             <Input
               type="text"
