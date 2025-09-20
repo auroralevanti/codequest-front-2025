@@ -31,7 +31,7 @@ export default function NotFound() {
       </div>
       
       {/* Message box positioned higher */}
-      <div className="absolute right-8 top-120 max-w-md bg-gray-100 rounded-2xl p-8 shadow-xl z-30 md:relative md:right-auto md:top-auto md:-ml-20">
+      <div className="absolute right-8 top-70 max-w-md bg-gray-100 rounded-2xl p-8 shadow-xl z-30 md:relative md:right-auto md:top-auto md:-ml-20">
         <p className="text-2xl font-bold text-center">Oh Oh, nuestro devi no encuentra la página solicitada</p>
         <div className="mt-10">
           {/* Your existing content */}
