@@ -313,18 +313,73 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     }
   };
 
-  const handleAddComment = (data: { content: string; author: string }) => {
-    const newComment: NormalizedComment = {
-      id: Date.now().toString(),
-      postId: String(postId),
-      author: data.author,
-      content: data.content,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      isLiked: false,
-      replies: []
-    };
-    setComments(prev => [...prev, newComment]);
+  const handleAddComment = async (data: { content: string; author: string }) => {
+    // Build payload expected by backend
+    const payload = {
+      postId: postId,
+      body: data.content,
+      parentCommentId: undefined,
+    } as Record<string, unknown>;
+
+    const token = getUserCookie()?.token;
+    try {
+      const res = await fetch(apiUrls.comments.create(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        console.error('[CommentsSection] failed to POST comment', res.status, res.statusText);
+        // fallback to optimistic local append
+        const fallback: NormalizedComment = {
+          id: Date.now().toString(),
+          postId: String(postId),
+          author: data.author,
+          content: data.content,
+          createdAt: new Date().toISOString(),
+          likes: 0,
+          isLiked: false,
+          replies: []
+        };
+        setComments(prev => [...prev, fallback]);
+        return;
+      }
+
+      const created = await res.json();
+      // Normalize backend response to our Local shape
+      const authorName = (created.author && (created.author.username || created.author.name)) || created.username || data.author || 'Usuario';
+      const commentObj: NormalizedComment = {
+        id: String(created.id ?? Date.now().toString()),
+        postId: String(created.postId ?? created.post_id ?? postId),
+        parentId: created.parentCommentId ?? created.parent_comment_id ?? undefined,
+        author: String(authorName),
+        avatarUrl: created.author?.avatarUrl ?? created.authorAvatar ?? undefined,
+        content: created.body ?? created.content ?? data.content,
+        createdAt: created.createdAt ?? created.created_at ?? new Date().toISOString(),
+        isLiked: Boolean(created.isLiked ?? created.isLikedByUser ?? false),
+        likes: Number(created.likes ?? created.likesCount ?? 0),
+        replies: []
+      };
+
+      setComments(prev => [commentObj, ...prev]);
+    } catch (e) {
+      console.error('[CommentsSection] error posting comment', e);
+      const fallback: NormalizedComment = {
+        id: Date.now().toString(),
+        postId: String(postId),
+        author: data.author,
+        content: data.content,
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        isLiked: false,
+        replies: []
+      };
+      setComments(prev => [...prev, fallback]);
+    }
   };
 
   const handleLike = (commentId: string) => {
