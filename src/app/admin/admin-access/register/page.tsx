@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import devi from "../../../../public/devi-laptop.png";
+import devi from "../../../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiUrls } from "@/config/api";
