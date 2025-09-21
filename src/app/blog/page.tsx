@@ -1,24 +1,16 @@
 "use client"
+
 import React, { useEffect, useState } from 'react';
 import { CategoriesBadge } from './components/categories/CategoriesBadge';
 import PostCard from './components/post/PostCard';
-import CommentList from './components/comment/CommentList';
+
 import { apiUrls } from '@/config/api';
 import { getUserCookie } from '@/lib/cookies';
+import { Post } from '@/types/post';
 
-const mockUser = { id: 'u1', username: 'Jordyn George', avatarUrl: 'https://i.ytimg.com/vi/PhOEqsmWpdg/maxresdefault.jpg' };
 
 export default function BlogPage() {
-  type Post = {
-    id: string;
-    author?: { id?: string; username?: string; avatarUrl?: string };
-    createdAt?: string;
-    body?: string;
-    content?: string;
-    images?: string[];
-    likes?: number;
-    commentsCount?: number;
-  };
+  
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +25,7 @@ export default function BlogPage() {
         });
         if (!res.ok) throw new Error('Failed to fetch posts');
         const data = await res.json();
-        // Assume API returns { posts: [...] } or an array
+       
         const list = Array.isArray(data) ? data : data.posts || [];
         setPosts(list);
       } catch (err) {

@@ -1,18 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react';
 import Image from "next/image";
-import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-import {  FaLock } from 'react-icons/fa';
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/types/forms";
-import { Separator } from "@radix-ui/react-separator";
-import { getUserCookie, isAdmin, removeUserCookie, setUserCookie, UserData } from "@/lib/cookies";
+import { setUserCookie } from "@/lib/cookies";
 import { apiUrls } from "@/config/api";
 
 import devi from "../../../public/login-desktop1.png";

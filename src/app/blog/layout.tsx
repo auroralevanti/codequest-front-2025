@@ -6,13 +6,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/router";
 
 import { MdPostAdd, MdExitToApp, MdAdd } from "react-icons/md";
+
 import { AvatarComponent } from "./components/avatar/Avatar";
 import { PostModal } from "./components/post/PostModal";
-import { FaHome, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
-
 import logoDevTalles from "../../../public/LOGOB.svg";
 import { getUserCookie, removeUserCookie, UserData } from "@/lib/cookies";
 import { Button } from "@/components/ui/button";
@@ -25,9 +23,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   
 
@@ -50,10 +46,6 @@ export default function DashboardLayout({
     removeUserCookie();
     window.location.href = '/login';
   };
-
-  const noPermit = () => {
-    window.location.href = '/login';
-  }
 
   if (authLoading) {
     return (

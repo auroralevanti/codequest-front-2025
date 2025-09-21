@@ -1,7 +1,6 @@
 'use client'
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -9,7 +8,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import devi from "../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@radix-ui/react-separator";
 import { setUserCookie } from "@/lib/cookies";
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiUrls } from "@/config/api";
@@ -176,7 +174,7 @@ export default function RegisterNewUserPage() {
             </div>
           </form>
           <div className="flex flex-row mb-10 text-center">
-              <p className="text-accent-background font-bold ">Forma parte de nuestro blog exclusivo</p>
+              <p className="text-accent-background font-bold ">Forma parte de nuestro exclusivo blog.</p>
           </div>
 
         </div>

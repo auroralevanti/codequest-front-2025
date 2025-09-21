@@ -129,6 +129,7 @@ export default function AdminDashboardPage() {
           }
         });
 
+          console.log('Respuesta de eliminar usuario de back: ', response );
         if (response.status === 401 || response.status === 403) {
           alert('No tienes permisos para realizar esta acción');
           router.push('/login');
@@ -160,6 +161,8 @@ export default function AdminDashboardPage() {
             'Authorization': `Bearer ${token}`
           }
         });
+
+        console.log('Respuesta eliminar pots de back: ', response );
 
         if (response.status === 401 || response.status === 403) {
           alert('No tienes permisos para realizar esta acción');

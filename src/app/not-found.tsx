@@ -1,9 +1,7 @@
 'use client'
+
 import Image from "next/image";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@radix-ui/react-separator";
+
 import devi from "../../public/404-desktop.png";
 import devimobile from "../../public/404-mobile.png";
 

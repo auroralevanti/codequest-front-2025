@@ -1,23 +1,36 @@
 "use client"
-import React, { useRef, useState } from 'react';
+
+import { useRef, useState } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat } from 'react-icons/md';
+import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat, MdEdit } from 'react-icons/md';
 
 import FannedImages from './FannedImages';
 import CommentList from '../comment/CommentList';
 import { CommentsSection } from '../comment/CommentsSection';
+import CreatePost from './CreatePost';
 import { getUserCookie } from '@/lib/cookies';
 import { AvatarComponent } from '../avatar/Avatar';
+import { Button } from '@/components/ui/button';
 
 type User = { id: string; username: string; avatarUrl?: string };
 
-type Props = { postId?: string; user: User; createdAt?: string; body?: string; images?: string[]; likes?: number; comments?: number };
+type Props = { 
+  postId?: string; 
+  user: User; 
+  createdAt?: string; 
+  body?: string; 
+  title?: string;
+  images?: string[]; 
+  likes?: number; 
+  comments?: number;
+  categoryId?: string;
+  tagIds?: string[];
+};
 
 type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: IconComponent; active?: boolean; activeColor?: string; pulse?: boolean; onClick?: () => void }) {
-  // pulse: temporary scale when clicked (controlled by parent)
   const scaleClass = pulse ? 'scale-110' : 'hover:scale-105';
   const colorClass = active ? activeColor ?? 'text-primary' : 'text-current';
   return (
@@ -30,68 +43,119 @@ function AnimatedIcon({ Icon, active, activeColor, pulse, onClick }: { Icon: Ico
   );
 }
 
-export default function PostCard({ postId, user, createdAt, body, images = [], likes = 0, comments = 0 }: Props) {
+export default function PostCard({ postId, user, createdAt, body, title, images = [], likes = 0, comments = 0, categoryId, tagIds }: Props) {
     
   const [showComments, setShowComments] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const commentsRef = useRef<HTMLDivElement | null>(null);
-  const currentUser = getUserCookie()?.username || getUserCookie()?.name || 'Usuario';
+  const currentUser = getUserCookie();
+  const currentUsername = currentUser?.username || currentUser?.name || 'Usuario';
 
+  const isOwner = currentUser?.id === user.id || currentUser?.username === user.username;
+
+ 
+  const postData = {
+    postId,
+    title: title || '',
+    content: body || '',
+    images: images || [],
+    categoryId,
+    tagIds: tagIds || []
+  };
 
   return (
-    <div className="bg-white p-4 border-10 border-accent-background mb-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <div className='mr-2'>
-          <AvatarComponent />
+    <>
+      <div className="bg-white p-4 border-10 border-accent-background mb-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className='mr-2'>
+              <AvatarComponent />
+            </div>
+            <div>
+              <p className="font-bold text-black mb-1">{user.username}</p>
+              <p className="text-sm text-black">{createdAt}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-black mb-1">{user.username}</p>
-            <p className="text-sm text-black">{createdAt}</p>
+          <div className="flex items-center gap-2">
+            
+            {
+            isOwner && (
+              <Button
+                onClick={() => setShowEditModal(true)}
+                className="p-2 text-gray-600 hover:text-blue-700 transition-colors"
+                title="Editar post"
+              >
+                <MdEdit size={20} />
+              </Button>
+            )}
+
+            <button className="bg-primary text-black px-4 py-1.5 rounded-full font-semibold text-sm">Following</button>
           </div>
         </div>
-        <button className="bg-primary text-black px-4 py-1.5 rounded-full font-semibold text-sm">Following</button>
+
+        <div className="mb-4">
+          {title && <h3 className="font-bold text-lg text-black mb-2">{title}</h3>}
+          <p className="text-black mb-4">{body}</p>
+          <FannedImages images={images} />
+        </div>
+
+        <div className="flex justify-start space-x-8">
+          <IconButtons
+            likes={likes}
+            commentsCount={comments}
+            onLike={() => {}}
+            onToggleComments={() => setShowComments(s => !s)}
+          />
+        </div>
+
+        {/* Collapsible comments area */}
+        <div className="mt-4">
+          <AnimatePresence initial={false}>
+            {showComments && (
+              <motion.div
+                key="comments"
+                initial={{ opacity: 0, height: 0, translateY: -8 }}
+                animate={{ opacity: 1, height: 'auto', translateY: 0 }}
+                exit={{ opacity: 0, height: 0, translateY: -8 }}
+                transition={{ duration: 0.28, ease: [0.2, 0.9, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div ref={commentsRef}>
+                  {postId ? (
+                    <CommentsSection postId={postId} currentUser={currentUsername} />
+                  ) : (
+                    <CommentList items={[]} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      <div className="mb-4">
-        <p className="text-black mb-4">{body}</p>
-        <FannedImages images={images} />
-      </div>
-
-      <div className="flex justify-start space-x-8">
-        <IconButtons
-          likes={likes}
-          commentsCount={comments}
-          onLike={() => {}}
-          onToggleComments={() => setShowComments(s => !s)}
-        />
-      </div>
-
-      {/* Collapsible comments area (framer-motion) */}
-      <div className="mt-4">
-        <AnimatePresence initial={false}>
-          {showComments && (
-            <motion.div
-              key="comments"
-              initial={{ opacity: 0, height: 0, translateY: -8 }}
-              animate={{ opacity: 1, height: 'auto', translateY: 0 }}
-              exit={{ opacity: 0, height: 0, translateY: -8 }}
-              transition={{ duration: 0.28, ease: [0.2, 0.9, 0.3, 1] }}
-              className="overflow-hidden"
-            >
-              <div ref={commentsRef}>
-                {postId ? (
-                  <CommentsSection postId={postId} currentUser={currentUser} />
-                ) : (
-                  <CommentList items={[]} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div
+            onClick={() => setShowEditModal(false)}
+            className="absolute inset-0 bg-black/30 backdrop-blur-xl"
+          />
+          <div
+            className="relative w-full max-w-md md:max-w-2xl lg:max-w-4xl px-4 pb-6 pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CreatePost 
+              onClose={() => setShowEditModal(false)}
+              editData={postData}
+              isEditing={true}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
+
 
 function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes: number; commentsCount: number; onLike?: () => void; onToggleComments?: () => void }) {
   const [liked, setLiked] = useState(false);
@@ -122,7 +186,7 @@ function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes
 
   return (
     <>
-      <div className="flex items-center space-x-2 text-secondary-light ">
+      <div className="flex items-center space-x-2 text-secondary-light">
         <button aria-label="like" onClick={handleLike} className="focus:outline-none">
           <AnimatedIcon Icon={MdFavoriteBorder} active={liked} activeColor="text-red-500" pulse={likePulse} />
         </button>
@@ -130,7 +194,7 @@ function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes
       </div>
       <div className="flex items-center space-x-2 text-secondary-light">
         <button aria-label="comment" onClick={handleComment} className="focus:outline-none">
-          <AnimatedIcon Icon={MdChatBubbleOutline} active={commented} activeColor="text-devi-color" pulse={commentPulse} />
+          <AnimatedIcon Icon={MdChatBubbleOutline} active={commented} activeColor="text-background" pulse={commentPulse} />
         </button>
         <span>{commentsCount}</span>
       </div>
