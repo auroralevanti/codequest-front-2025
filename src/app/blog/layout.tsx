@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -11,9 +11,10 @@ import { useRouter } from "next/router";
 import { MdPostAdd, MdExitToApp, MdAdd } from "react-icons/md";
 import { AvatarComponent } from "./components/avatar/Avatar";
 import { PostModal } from "./components/post/PostModal";
+import { FaHome, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
 
 import logoDevTalles from "../../../public/LOGOB.svg";
-import { removeUserCookie } from "@/lib/cookies";
+import { getUserCookie, removeUserCookie, UserData } from "@/lib/cookies";
 import { Button } from "@/components/ui/button";
 
 
@@ -24,12 +25,60 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  
 
-  //const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const checkAuth = () => {
+      const currentUserData = getUserCookie();
+
+      setUserData(currentUserData);
+      setAuthLoading(false);
+      
+    };
+
+    checkAuth();
+  }, []);
 
   const onLogout = () => {
     removeUserCookie();
     window.location.href = '/login';
+  };
+
+  const noPermit = () => {
+    window.location.href = '/login';
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <FaLock className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
+          <p className="text-gray-700 mb-4">No tienes permisos de administrador</p>
+          <Button onClick={noPermit}>
+            Ir al Login
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

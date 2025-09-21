@@ -71,7 +71,7 @@ export default function AdminLayout({
         </div>
       </div>
     );
-  }
+  };
 
   const menuItems = [
     { name: 'Dashboard', href: '/admin/admin-access/dashboard', icon: FaHome }    

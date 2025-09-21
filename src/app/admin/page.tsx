@@ -154,25 +154,8 @@ export default function AdminPage() {
 
             </div>
           </form>
-          <div className="flex items-center mb-5">
-            <Separator className="flex-grow border-gray-400 border-1 mr-1" />
-            <span className="text-gray-400">&nbsp; o continua con &nbsp;</span>
-            <Separator className="flex-grow border-gray-400 border-1 ml-1" />
-          </div>
-          <div className="flex text-white mb-10 justify-center items-center">
-            <Button
-              variant='outline'
-              className="justify-center items-center"
-              onClick={() => window.location.href = apiUrls.auth.discord()}>
-              Discord
-            </Button>
-          </div>
-          <div className="flex flex-row mb-10">
-            <p className="text-gray-600">¿Quieres ser miembro? &nbsp;</p>
-            <Link href='/register' passHref>
-              <p className="text-darker-purple font-bold">Inicia el Registro gratis</p>
-            </Link>
-          </div>
+          
+   
         </div>
       </div>
     </div>

@@ -97,6 +97,7 @@ export default function AdminDashboardPage() {
       const postsData = await postsResponse.json();
       console.log('Posts:', postsData);
       const post = postsData.posts;
+      //const postTotal = postsData.
       console.log('Posts como objetos: ', post);
       setPosts(Array.isArray(post) ? post : []);
 
@@ -401,7 +402,7 @@ export default function AdminDashboardPage() {
                 {filteredPosts.map((post) => (
                   <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{post.title || 'Sin título'}</h3>
+                      <h3 className="font-semibold text-lg">{ post.title || 'Sin título' }</h3>
                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                         {post.content?.substring(0, 100)}...
                       </p>
