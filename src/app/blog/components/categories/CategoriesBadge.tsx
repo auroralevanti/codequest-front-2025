@@ -62,10 +62,9 @@ export const CategoriesBadge = () => {
           categoriesArray = [];
         }
 
-        const mappedCategories: Category[] = categoriesArray.map((cat: any) => ({
-          id: String(cat.id || cat._id || ''),
-          slug: String(cat.slug || ''),
-          name: String(cat.name || '')
+        const mappedCategories: Category[] = categoriesArray.map((category: Category) => ({
+          slug: String(category.slug || ''),
+          name: String(category.name || '')
         }));
 
         setCategories(mappedCategories);
