@@ -85,7 +85,7 @@ export default function CreatePost({ onClose }: { onClose?: () => void }) {
   }, []);
 
   return (
-    <div className="max-w-full mx-auto px-4">
+    <div className="max-w-full md:max-w-2xl lg:max-w-4xl mx-auto px-4">
       <div className="bg-white rounded-xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col pt-4">
         <header className="p-4 flex items-center justify-between border-b border-light-token dark:border-dark-token">
           <button className="text-text-light dark:text-text-dark" onClick={() => onClose && onClose()}>
