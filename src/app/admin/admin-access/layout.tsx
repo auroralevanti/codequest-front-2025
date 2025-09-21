@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { FaHome, FaUsers, FaFileAlt, FaCog, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
+import { FaHome, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
 import { getUserCookie, removeUserCookie, isAdmin, UserData } from '@/lib/cookies';
 
-
-import { AvatarComponent } from '../blog/components/avatar/Avatar';
+import { AvatarComponent } from '../../blog/components/avatar/Avatar';
 //import { UserData } from '@/types/api';
 
 export default function AdminLayout({
@@ -75,10 +74,7 @@ export default function AdminLayout({
   }
 
   const menuItems = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: FaHome },
-    { name: 'Usuarios', href: '/admin/users', icon: FaUsers },
-    { name: 'Posts', href: '/admin/posts', icon: FaFileAlt },
-    //{ name: 'Configuración', href: '/admin/settings', icon: FaCog },
+    { name: 'Dashboard', href: '/admin/admin-access/dashboard', icon: FaHome }    
   ];
 
   return (

@@ -29,26 +29,18 @@ export default function AdminDashboardPage() {
       if (typeof window === 'undefined') return;
       
       setAuthLoading(true);
-  
-      //const userData = getUserCookie();
-
-    /*console.log('User Data from Cookie:', userData);
-      console.log('User Role:', userData?.roles);
-      console.log('Is User Logged In:', isUserLoggedIn());
-      console.log('Is Admin:', isAdmin()); */
  
       if (!isUserLoggedIn()) {
         console.log('Usuario debe de iniciar sesion');
         router.push('/admin');
         return;
-      }
-
+      };
 
       if (!isAdmin()) {
         console.log('Usuario no es admin');
         router.push('/login'); 
         return;
-      }
+      };
 
       console.log('Acceso exitoso');
       setIsAuthorized(true);
