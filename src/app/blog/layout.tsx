@@ -64,22 +64,7 @@ export default function DashboardLayout({
         </div>
       </div>
     );
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <FaLock className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
-          <p className="text-gray-700 mb-4">No tienes permisos de administrador</p>
-          <Button onClick={noPermit}>
-            Ir al Login
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
     <>
