@@ -126,7 +126,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex max-w-5xl w-full items-center justify-between relative flex-col md:flex-row">
-      <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+      <div className="w-full md:w-1/2 flex justify-center mb-50 md:mb-0">
         <Image
           src={devi.src}
           alt='Devi'
