@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
  
   const userData = isAuthorized ? getUserCookie() : null;
   const token = userData?.token;
-  console.log('admin token: ', token);
+  //console.log('admin token: ', token);
 
   const fetchData = useCallback(async () => {
     try {
@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
       }
 
       const postsData = await postsResponse.json();
-      console.log('Posts:', postsData);
+      //console.log('Posts:', postsData);
       const post = postsData.posts;
       //const postTotal = postsData.
       console.log('Posts como objetos: ', post);
@@ -117,12 +117,14 @@ export default function AdminDashboardPage() {
   }, [authLoading, isAuthorized, fetchData]);
 
   const handleDeleteUser = async (userId: string) => {
+
+    const deleteUserUrl = `https://codequest-backend-2025.onrender.com/api/v1/users/${userId}`
     if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(apiUrls.users.byId(userId), {
+        const response = await fetch( deleteUserUrl, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -150,12 +152,15 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeletePost = async (postId: string) => {
+
+    const deletePostUrl = `https://codequest-backend-2025.onrender.com/api/v1/posts/${postId}/share`
+
     if (confirm('¿Estás seguro de que quieres eliminar este post?')) {
       try {
         const userData = getUserCookie();
         const token = userData?.token;
         
-        const response = await fetch(apiUrls.posts.byId(postId), {
+        const response = await fetch( deletePostUrl, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -366,14 +371,6 @@ export default function AdminDashboardPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(`/admin/users/${user.id}/edit`, '_blank')}
-                        className='bg-white border-accent-background'
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => handleDeleteUser(user.id)}
                         className="bg-white text-red-600 hover:text-red-700"
                       >
@@ -424,14 +421,7 @@ export default function AdminDashboardPage() {
                       >
                         <FaEye />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(`/admin/posts/${post.id}/edit`, '_blank')}
-                        className='bg-white border-accent-background'
-                      >
-                        <FaEdit />
-                      </Button>
+                      
                       <Button
                         variant="outline"
                         size="sm"

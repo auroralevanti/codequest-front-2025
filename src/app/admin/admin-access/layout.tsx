@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { FaHome, FaSignOutAlt, FaBars, FaTimes, FaLock } from 'react-icons/fa';
+import { MdOutlineCategory } from "react-icons/md";
 import { getUserCookie, removeUserCookie, isAdmin, UserData } from '@/lib/cookies';
 
 import { AvatarComponent } from '../../blog/components/avatar/Avatar';
-//import { UserData } from '@/types/api';
+
 
 export default function AdminLayout({
   children,
@@ -74,7 +75,8 @@ export default function AdminLayout({
   };
 
   const menuItems = [
-    { name: 'Dashboard', href: '/admin/admin-access/dashboard', icon: FaHome }    
+    { name: 'Dashboard', href: '/admin/admin-access/dashboard', icon: FaHome },    
+    { name: 'Crear Categoría', href: '/admin/admin-access/new-category', icon: MdOutlineCategory }    
   ];
 
   return (

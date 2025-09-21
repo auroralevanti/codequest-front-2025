@@ -23,7 +23,7 @@ export default function BlogPage() {
         const res = await fetch(apiUrls.posts.list(), {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-        if (!res.ok) throw new Error('Failed to fetch posts');
+        
         const data = await res.json();
        
         const list = Array.isArray(data) ? data : data.posts || [];
