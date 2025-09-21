@@ -38,7 +38,7 @@ export default function PostCard({ postId, user, title, createdAt, body, images 
 
 
   return (
-    <div className="bg-white p-4 border-20 border-accent-background">
+    <div className="bg-white p-4 border-10 border-accent-background mb-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <div className='mr-2'>
@@ -128,19 +128,19 @@ function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes
 
   return (
     <>
-      <div className="flex items-center space-x-2 text-secondary-light dark:text-secondary-dark">
+      <div className="flex items-center space-x-2 text-secondary-light ">
         <button aria-label="like" onClick={handleLike} className="focus:outline-none">
           <AnimatedIcon Icon={MdFavoriteBorder} active={liked} activeColor="text-red-500" pulse={likePulse} />
         </button>
         <span>{likes}</span>
       </div>
-      <div className="flex items-center space-x-2 text-secondary-light dark:text-secondary-dark">
+      <div className="flex items-center space-x-2 text-secondary-light">
         <button aria-label="comment" onClick={handleComment} className="focus:outline-none">
-          <AnimatedIcon Icon={MdChatBubbleOutline} active={commented} activeColor="text-gray-500" pulse={commentPulse} />
+          <AnimatedIcon Icon={MdChatBubbleOutline} active={commented} activeColor="text-devi-color" pulse={commentPulse} />
         </button>
         <span>{commentsCount}</span>
       </div>
-      <div className="flex items-center space-x-2 text-secondary-light dark:text-secondary-dark">
+      <div className="flex items-center space-x-2 text-secondary-light">
         <button aria-label="share" onClick={handleShare} className="focus:outline-none">
           <AnimatedIcon Icon={MdRepeat} active={shared} activeColor="text-blue-500" pulse={sharePulse} />
         </button>

@@ -29,26 +29,18 @@ export default function AdminDashboardPage() {
       if (typeof window === 'undefined') return;
       
       setAuthLoading(true);
-  
-      //const userData = getUserCookie();
-
-    /*console.log('User Data from Cookie:', userData);
-      console.log('User Role:', userData?.roles);
-      console.log('Is User Logged In:', isUserLoggedIn());
-      console.log('Is Admin:', isAdmin()); */
  
       if (!isUserLoggedIn()) {
         console.log('Usuario debe de iniciar sesion');
         router.push('/admin');
         return;
-      }
-
+      };
 
       if (!isAdmin()) {
         console.log('Usuario no es admin');
         router.push('/login'); 
         return;
-      }
+      };
 
       console.log('Acceso exitoso');
       setIsAuthorized(true);
@@ -105,6 +97,7 @@ export default function AdminDashboardPage() {
       const postsData = await postsResponse.json();
       console.log('Posts:', postsData);
       const post = postsData.posts;
+      //const postTotal = postsData.
       console.log('Posts como objetos: ', post);
       setPosts(Array.isArray(post) ? post : []);
 
@@ -409,7 +402,7 @@ export default function AdminDashboardPage() {
                 {filteredPosts.map((post) => (
                   <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{post.title || 'Sin título'}</h3>
+                      <h3 className="font-semibold text-lg">{ post.title || 'Sin título' }</h3>
                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                         {post.content?.substring(0, 100)}...
                       </p>

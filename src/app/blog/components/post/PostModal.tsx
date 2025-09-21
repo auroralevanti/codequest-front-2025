@@ -33,7 +33,7 @@ export const PostModal = ({ isOpen, onClose }: PostModalProps) => {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md px-4 pb-6 pointer-events-auto"
+            className="relative w-full max-w-md md:max-w-2xl lg:max-w-4xl px-4 pb-6 pointer-events-auto"
             style={{ bottom: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
