@@ -47,9 +47,9 @@ export default function BlogPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto py-8">
-        <div className="mb-6">
+    <div className="min-h-screen bg-background justify-center items-center">
+      <div className="mx-auto py-8 justify-center items-center">
+        <div className=" mb-6 flex flex-wrap justify-center items-center">
           <CategoriesBadge />
         </div>
 
