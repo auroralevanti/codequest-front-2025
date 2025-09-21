@@ -119,7 +119,7 @@ export default function DashboardLayout({
           <main>
             <div className="pt-6 px-4">
               <div className="w-full min-h-[calc(100vh-230px)]">
-                <div className=" shadow rounded-lg p-4 sm:p-6 xl:p-8">
+                <div className="shadow rounded-lg p-4 sm:p-6 xl:p-8">
                   {children}
                 </div>
               </div>
@@ -129,12 +129,12 @@ export default function DashboardLayout({
 
 
           </footer>
-          <p className="text-center text-sm text-gray-500 my-10">
-            &copy; 2019-{new Date().getFullYear()}{" "}
-            <a href="#" className="hover:underline" target="_blank">
-              Themesberg
+          <p className="text-center text-sm text-white my-10">
+            &copy; 2025-{new Date().getFullYear()}{" "}
+            <a href="https://cursos.devtalles.com/" className="hover:underline" target="_blank">
+              DevTalles
             </a>
-            . All rights reserved.
+            . Todos los derechos reservados.
           </p>
         </div>
         {/*  </div> */}

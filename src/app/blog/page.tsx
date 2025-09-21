@@ -47,14 +47,14 @@ export default function BlogPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-background-dark text-text-light dark:text-text-dark">
-      <div className="max-w-md mx-auto py-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto py-8">
         <div className="mb-6">
           <CategoriesBadge />
         </div>
 
         {loading ? (
-          <div>Loading posts...</div>
+          <div>Cargando posts...</div>
         ) : (
           posts.map((p) => (
             <PostCard
