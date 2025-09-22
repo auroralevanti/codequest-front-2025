@@ -11,6 +11,7 @@ import { Post } from '@/types/post';
 
 export default function BlogPage() {
   type Post = {
+    title: string | undefined;
     id: string;
     author?: { id?: string; username?: string; avatarUrl?: string };
     createdAt?: string;
