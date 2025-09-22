@@ -1,18 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react';
 import Image from "next/image";
-import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 
 import { SubmitHandler, useForm } from "react-hook-form";
-import {  FaLock } from 'react-icons/fa';
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/types/forms";
-import { Separator } from "@radix-ui/react-separator";
-import { getUserCookie, isAdmin, removeUserCookie, setUserCookie, UserData } from "@/lib/cookies";
+import { setUserCookie } from "@/lib/cookies";
 import { apiUrls } from "@/config/api";
 
 import devi from "../../../public/login-desktop1.png";
@@ -88,8 +85,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="flex max-w-5xl min-h-screen items-center justify-between relative flex-col md:flex-row">
-      <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+    <div className="flex max-w-5xl min-h-screen items-center justify-center relative flex-col md:flex-row">
+      <div className="absolute w-full md:w-1/2 justify-center mb-8 md:mb-0">
         <Image
           src={devi.src}
           alt='Devi'
@@ -107,7 +104,7 @@ export default function AdminPage() {
           priority
         />
       </div>
-      <div className="w-full  md:w-5xl max-w-md bg-gray-100 rounded-2xl p-8 shadow -mt-90 md:mt-0 md:-ml-60 z-10">
+      <div className="w-full md:w-5xl max-w-md bg-gray-100 rounded-2xl p-8 shadow mt-70 md:mt-0 md:ml-140 z-10">
         <p className="text-2xl font-bold text-center">ACCESO ADMIN</p>
         <p className="text-2xl font-bold text-center">Ingresar al blog de DevTalles</p>
 

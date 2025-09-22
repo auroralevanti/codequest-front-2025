@@ -10,6 +10,7 @@ import devi from "../../../../../public/devi-laptop.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiUrls } from "@/config/api";
+import { getUserCookie } from "@/lib/cookies";
 
 
 interface LoginForm {
@@ -32,23 +33,23 @@ export default function RegisterNewAdminPage() {
   const roles = 'admin';
   
   const url = apiUrls.auth.signup();
+  const userData = getUserCookie();
+  const token = userData?.token;
   
   try {
     
     const toLogin = await fetch( url, {
       method: 'POST',
       headers: {
-        'Content-type': 'application/json'
+        'Content-type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({username, email, password, roles})
     });
   
     const resp = await toLogin.json();
-    console.log(resp);
+    //console.log(resp);
   
-  /*    if( resp.status === 401 ){
-      alert('Error en email o password');
-    }; */
     if( resp ){
       alert('Bienvenido');
       router.push('/admin/dashboard')
