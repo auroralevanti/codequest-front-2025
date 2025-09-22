@@ -45,22 +45,21 @@ export const CategoriesBadge = () => {
         const data = await response.json();
         console.log('categorias: ', data);
         
-        // Handle the nested response structure
         let categoriesArray = [];
         
         if (Array.isArray(data)) {
-          // If data is directly an array
+          
           categoriesArray = data;
         } else if (data.data && Array.isArray(data.data)) {
-          // If data is nested in a 'data' property
+          
           categoriesArray = data.data;
         } else if (data.categories && Array.isArray(data.categories)) {
-          // Alternative structure with 'categories' property
+          
           categoriesArray = data.categories;
         } else {
-          // Fallback - try to find any array in the response
+          
           categoriesArray = [];
-        }
+        };
 
         const mappedCategories: Category[] = categoriesArray.map((category: Category) => ({
           slug: String(category.slug || ''),
