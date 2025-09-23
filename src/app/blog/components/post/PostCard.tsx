@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdFavoriteBorder, MdChatBubbleOutline, MdRepeat, MdEdit } from 'react-icons/md';
+import { MdFavorite, MdFavoriteBorder, MdChatBubbleOutline, MdRepeat, MdEdit } from 'react-icons/md';
 
 import FannedImages from './FannedImages';
 import CommentList from '../comment/CommentList';
@@ -12,6 +12,7 @@ import CreatePost from './CreatePost';
 import { getUserCookie } from '@/lib/cookies';
 import { AvatarComponent } from '../avatar/Avatar';
 import { Button } from '@/components/ui/button';
+import { useLike } from '@/hooks/useLike';
 
 type User = { id: string; username: string; avatarUrl?: string };
 
@@ -63,6 +64,11 @@ export default function PostCard({ postId, user, createdAt, body, title, images 
     tagIds: tagIds || []
   };
 
+  const { liked, likeCount, loading, toggleLike } = useLike({ 
+    postId, 
+    initialLikeCount: likes || 0 
+  });
+
   return (
     <>
       <div className="bg-white p-4 border-10 border-accent-background mb-4">
@@ -101,9 +107,11 @@ export default function PostCard({ postId, user, createdAt, body, title, images 
 
         <div className="flex justify-start space-x-8">
           <IconButtons
-            likes={likes}
+            liked={liked}
+            likeCount={likeCount}
+            loading={loading}
+            onToggleLike={toggleLike}
             commentsCount={comments}
-            onLike={() => {}}
             onToggleComments={() => setShowComments(s => !s)}
           />
         </div>
@@ -157,27 +165,56 @@ export default function PostCard({ postId, user, createdAt, body, title, images 
 }
 
 
-function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes: number; commentsCount: number; onLike?: () => void; onToggleComments?: () => void }) {
-  const [liked, setLiked] = useState(false);
+function IconButtons({ 
+  liked,
+  likeCount,
+  loading,
+  onToggleLike,
+  commentsCount, 
+  onToggleComments 
+}: { 
+  liked: boolean;
+  likeCount: number;
+  loading: boolean;
+  onToggleLike: () => Promise<{ success: boolean; error?: string }>;
+  commentsCount: number; 
+  onToggleComments?: () => void 
+}) {
   const [commented, setCommented] = useState(false);
   const [shared, setShared] = useState(false);
 
   const [likePulse, setLikePulse] = useState(false);
   const [commentPulse, setCommentPulse] = useState(false);
   const [sharePulse, setSharePulse] = useState(false);
+  
+  const currentUser = getUserCookie();
 
-  const handleLike = () => {
-    setLiked(prev => !prev);
+  const handleLike = async () => {
+    // If user is not authenticated, we can't proceed
+    if (!currentUser?.token) {
+      alert('Debes iniciar sesión para dar like');
+      return;
+    }
+
+    if (loading) return;
+
     setLikePulse(true);
+    
+    const result = await onToggleLike();
+    if (!result.success && result.error) {
+      alert(result.error);
+    }
+    
     setTimeout(() => setLikePulse(false), 220);
-    onLike && onLike();
   };
+
   const handleComment = () => {
     setCommented(prev => !prev);
     setCommentPulse(true);
     setTimeout(() => setCommentPulse(false), 220);
     onToggleComments && onToggleComments();
   };
+
   const handleShare = () => {
     setShared(prev => !prev);
     setSharePulse(true);
@@ -187,20 +224,48 @@ function IconButtons({ likes, commentsCount, onLike, onToggleComments }: { likes
   return (
     <>
       <div className="flex items-center space-x-2 text-secondary-light">
-        <button aria-label="like" onClick={handleLike} className="focus:outline-none">
-          <AnimatedIcon Icon={MdFavoriteBorder} active={liked} activeColor="text-red-500" pulse={likePulse} />
+        <button 
+          aria-label={liked ? "unlike" : "like"} 
+          onClick={handleLike} 
+          className="focus:outline-none"
+          disabled={loading}
+        >
+          <AnimatedIcon 
+            Icon={liked ? MdFavorite : MdFavoriteBorder} 
+            active={liked} 
+            activeColor="text-red-500" 
+            pulse={likePulse} 
+          />
         </button>
-        <span>{likes}</span>
+        <span>{likeCount}</span>
       </div>
       <div className="flex items-center space-x-2 text-secondary-light">
-        <button aria-label="comment" onClick={handleComment} className="focus:outline-none">
-          <AnimatedIcon Icon={MdChatBubbleOutline} active={commented} activeColor="text-background" pulse={commentPulse} />
+        <button 
+          aria-label="comment" 
+          onClick={handleComment} 
+          className="focus:outline-none"
+        >
+          <AnimatedIcon 
+            Icon={MdChatBubbleOutline} 
+            active={commented} 
+            activeColor="text-background" 
+            pulse={commentPulse} 
+          />
         </button>
         <span>{commentsCount}</span>
       </div>
       <div className="flex items-center space-x-2 text-secondary-light">
-        <button aria-label="share" onClick={handleShare} className="focus:outline-none">
-          <AnimatedIcon Icon={MdRepeat} active={shared} activeColor="text-blue-500" pulse={sharePulse} />
+        <button 
+          aria-label="share" 
+          onClick={handleShare} 
+          className="focus:outline-none"
+        >
+          <AnimatedIcon 
+            Icon={MdRepeat} 
+            active={shared} 
+            activeColor="text-blue-500" 
+            pulse={sharePulse} 
+          />
         </button>
         <span>1.5K</span>
       </div>
