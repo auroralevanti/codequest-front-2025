@@ -51,6 +51,7 @@ config/api.ts
 
 - Para acceder como usuario de tipo admin: [https://dt-blog-2025.levaxonline.com/admin](https://dt-blog-2025.levaxonline.com/admin/)
 
+- Para acceder a endpoint utilizados: [https://codequest-backend-2025.onrender.com/api#/](https://codequest-backend-2025.onrender.com/api#/)
 ## Usuarios Muestras
 
 ```bash
