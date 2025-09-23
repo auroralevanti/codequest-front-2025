@@ -322,7 +322,7 @@ export default function AdminDashboardPage() {
                 Posts
               </Button>
               <Button
-                onClick={() => router.push('/admin/register')}
+                onClick={() => router.push('/admin/admin-acces/register')}
                 className="flex items-center gap-2 bg-accent-background"
               >
                 <FaUserPlus />

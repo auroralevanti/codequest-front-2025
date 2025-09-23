@@ -95,7 +95,7 @@ export default function PostCard({ postId, user, createdAt, body, title, images 
               </Button>
             )}
 
-            <button className="bg-primary text-black px-4 py-1.5 rounded-full font-semibold text-sm">Following</button>
+            {/* <button className="bg-primary text-black px-4 py-1.5 rounded-full font-semibold text-sm">Following</button> */}
           </div>
         </div>
 
