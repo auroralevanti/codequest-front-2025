@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+CodeQuest 2025 Blog
 
-## Getting Started
+Cumpliendo con las indicaciones para los grupos participantes del CodeQuest de DevTalles edición del 2025 presentamos una Web App moderna, con diseño responsive, creada en el front con framework Nextjs, TypeScript y Tailwind CSS.
 
-First, run the development server:
+Este desarrollo se encuentra en producción en [https://dt-blog-2025.levaxonline.com](https://dt-blog-2025.levaxonline.com)
+
+Si prefiere correr en local por defecto su navegador abrira en [http://localhost:3000](http://localhost:3000). A menos que personalice la url.
+
+Frontend
+
+Next.js - React framework con App Router
+TypeScript - Tipado
+Tailwind CSS - Framework de CSS
+shadcn/ui - UI components
+React Icons - Librería de iconos
+React Hook Form - Librería de formulario
+
+Integración con Backend
+
+JWT Authentication - Para verificar usuarios al login
+Cookie Management - Para mantener estado de usuario sin uso de context 
+
+## Ejecución en Local del FrontEnd
+
+1. Git clone del proyecto
+2. npm install
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+```
+3.- Correr en local utilice el comando 
+
+```bash
+npm run dev
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Detalles del proyecto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para evitar mayores configuraciones de env en desarrollo local:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Hemos creado un sistema de rutas que utiliza env de Nextjs pero no necesitan configuración manual.
+config/api.ts
 
-## Learn More
+- La idea con la que se diseñó este proyecto es que blog sea parte del sitio web y su acceso sea restringuido a usuarios ya registrados, por lo tanto la ruta "/" se programó a la redirección del login de usuarios.
 
-To learn more about Next.js, take a look at the following resources:
+## Accesos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Para acceder como usuario de tipo user: [https://dt-blog-2025.levaxonline.com/login](https://dt-blog-2025.levaxonline.com/login)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Para acceder como usuario de tipo admin: [https://dt-blog-2025.levaxonline.com/admin](https://dt-blog-2025.levaxonline.com/admin/)
 
-## Deploy on Vercel
+## Usuarios Muestras
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+usuario: auroralevanti@levaxonline.com
+password: 12345678910
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy en Vercel
+
+Este proyecto se limita al FrontEnd del CodeQuest 2025, y está desplegado en Vercel. El backend tiene su propio despliege, el cual demora unos segundos en responder, ya que estamos usando la cap gratuita
+
+Para mas detalle del backend, por favor referirse a la documentación del mismo.
