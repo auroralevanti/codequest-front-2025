@@ -26,7 +26,16 @@ export default function BlogPage() {
         
         const data = await res.json();
        
-        const list = Array.isArray(data) ? data : data.posts || [];
+        // Handle different response formats
+        let list: Post[] = [];
+        if (Array.isArray(data)) {
+          list = data;
+        } else if (data.posts && Array.isArray(data.posts)) {
+          list = data.posts;
+        } else if (data.data && Array.isArray(data.data)) {
+          list = data.data;
+        }
+        
         setPosts(list);
       } catch (err) {
         console.error(err);
@@ -46,8 +55,11 @@ export default function BlogPage() {
         </div>
 
         {loading ? (
-          <div>Cargando posts...</div>
-        ) : (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <span className="ml-3">Cargando posts...</span>
+          </div>
+        ) : posts.length > 0 ? (
           posts.map((p) => (
             <PostCard
               key={p.id}
@@ -64,6 +76,10 @@ export default function BlogPage() {
               comments={p.commentsCount || 0}
             />
           ))
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No hay posts disponibles en este momento.</p>
+          </div>
         )}
       </div>
     </div>
