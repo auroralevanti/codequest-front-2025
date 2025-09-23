@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock, FaRedo } from 'react-icons/fa';
+import { FaUsers, FaFileAlt, FaTrash, FaEdit, FaSearch, FaUserPlus, FaEye, FaUserShield, FaLock, FaRedo, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { getUserCookie, isAdmin, isUserLoggedIn } from '@/lib/cookies';
 
 import { UserData, PostData } from '@/types/api';
@@ -21,7 +21,15 @@ export default function AdminDashboardPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('users');
-
+  
+  // Pagination states
+  const [userCurrentPage, setUserCurrentPage] = useState(1);
+  const [postCurrentPage, setPostCurrentPage] = useState(1);
+  const [userTotalPages, setUserTotalPages] = useState(1);
+  const [postTotalPages, setPostTotalPages] = useState(1);
+  const [userTotalCount, setUserTotalCount] = useState(0);
+  const [postTotalCount, setPostTotalCount] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -55,6 +63,112 @@ export default function AdminDashboardPage() {
   const token = userData?.token;
   //console.log('admin token: ', token);
 
+  const fetchUsers = useCallback(async (page: number) => {
+    try {
+      if (!token) {
+        console.error('No admin token available');
+        return;
+      }
+
+      // Fetch users with pagination
+      const paginatedUrl = `${apiUrls.users.list()}?page=${page}&limit=${itemsPerPage}`;
+      const usersResponse = await fetch(paginatedUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (usersResponse.status === 401 || usersResponse.status === 403) {
+        console.error('Unauthorized access');
+        return;
+      }
+
+      const usersData = await usersResponse.json();
+      // Handle different response formats
+      let usersList: UserData[] = [];
+      let totalCount = 0;
+      let pageCount = 1;
+      
+      if (Array.isArray(usersData)) {
+        usersList = usersData;
+        totalCount = usersData.length;
+      } else if (usersData.data && Array.isArray(usersData.data)) {
+        usersList = usersData.data;
+        totalCount = usersData.total || usersData.totalCount || usersData.data.length;
+      } else if (usersData.users && Array.isArray(usersData.users)) {
+        usersList = usersData.users;
+        totalCount = usersData.total || usersData.totalCount || usersData.users.length;
+      } else if (usersData.results && Array.isArray(usersData.results)) {
+        usersList = usersData.results;
+        totalCount = usersData.total || usersData.totalCount || usersData.count || usersData.results.length;
+      }
+      
+      // Calculate pagination info
+      if (totalCount > 0) {
+        pageCount = Math.ceil(totalCount / itemsPerPage);
+      }
+      
+      setUsers(usersList);
+      setUserTotalCount(totalCount);
+      setUserTotalPages(pageCount);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, [token]);
+
+  const fetchPosts = useCallback(async (page: number) => {
+    try {
+      if (!token) {
+        console.error('No admin token available');
+        return;
+      }
+
+      // Fetch posts with pagination
+      const paginatedUrl = `${apiUrls.posts.list()}?page=${page}&limit=${itemsPerPage}`;
+      const postsResponse = await fetch(paginatedUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (postsResponse.status === 401 || postsResponse.status === 403) {
+        console.error('Unauthorized access');
+        return;
+      }
+
+      const postsData = await postsResponse.json();
+      // Handle different response formats
+      let postsList: PostData[] = [];
+      let totalCount = 0;
+      let pageCount = 1;
+      
+      if (Array.isArray(postsData)) {
+        postsList = postsData;
+        totalCount = postsData.length;
+      } else if (postsData.data && Array.isArray(postsData.data)) {
+        postsList = postsData.data;
+        totalCount = postsData.total || postsData.totalCount || postsData.data.length;
+      } else if (postsData.posts && Array.isArray(postsData.posts)) {
+        postsList = postsData.posts;
+        totalCount = postsData.total || postsData.totalCount || postsData.posts.length;
+      } else if (postsData.results && Array.isArray(postsData.results)) {
+        postsList = postsData.results;
+        totalCount = postsData.total || postsData.totalCount || postsData.count || postsData.results.length;
+      }
+      
+      // Calculate pagination info
+      if (totalCount > 0) {
+        pageCount = Math.ceil(totalCount / itemsPerPage);
+      }
+      
+      setPosts(postsList);
+      setPostTotalCount(totalCount);
+      setPostTotalPages(pageCount);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  }, [token]);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -67,56 +181,12 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      // Fetch users with pagination
-      const usersResponse = await fetch(apiUrls.users.list(), {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (usersResponse.status === 401 || usersResponse.status === 403) {
-        console.error('Unauthorized access');
-        alert('Acceso no permitido');
-        return;
+      // Fetch current tab data
+      if (activeTab === 'users') {
+        await fetchUsers(userCurrentPage);
+      } else {
+        await fetchPosts(postCurrentPage);
       }
-
-      const usersData = await usersResponse.json();
-      // Handle different response formats
-      let usersList: UserData[] = [];
-      if (Array.isArray(usersData)) {
-        usersList = usersData;
-      } else if (usersData.data && Array.isArray(usersData.data)) {
-        usersList = usersData.data;
-      } else if (usersData.users && Array.isArray(usersData.users)) {
-        usersList = usersData.users;
-      }
-      setUsers(usersList);
-
-      // Fetch all posts
-      const postsResponse = await fetch(apiUrls.posts.list(), {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (postsResponse.status === 401 || postsResponse.status === 403) {
-        console.error('Unauthorized access');
-        alert('Acceso no permitido');
-        return;
-      }
-
-      const postsData = await postsResponse.json();
-      // Handle different response formats
-      let postsList: PostData[] = [];
-      if (Array.isArray(postsData)) {
-        postsList = postsData;
-      } else if (postsData.data && Array.isArray(postsData.data)) {
-        postsList = postsData.data;
-      } else if (postsData.posts && Array.isArray(postsData.posts)) {
-        postsList = postsData.posts;
-      }
-      console.log('Posts como objetos: ', postsList);
-      setPosts(postsList);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -124,7 +194,7 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, router]);
+  }, [token, router, activeTab, userCurrentPage, postCurrentPage, fetchUsers, fetchPosts]);
 
   useEffect(() => {
 
@@ -135,6 +205,18 @@ export default function AdminDashboardPage() {
 
   const handleRefresh = () => {
     fetchData();
+  };
+
+  const handleUserPageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= userTotalPages) {
+      setUserCurrentPage(newPage);
+    }
+  };
+
+  const handlePostPageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= postTotalPages) {
+      setPostCurrentPage(newPage);
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -159,7 +241,8 @@ export default function AdminDashboardPage() {
         }
         
         if (response.ok) {
-          setUsers(users.filter(user => user.id !== userId));
+          // Refresh the current page of users
+          await fetchUsers(userCurrentPage);
           alert('Usuario eliminado correctamente');
         } else {
           const errorData = await response.json();
@@ -194,7 +277,8 @@ export default function AdminDashboardPage() {
         }
         
         if (response.ok) {
-          setPosts(posts.filter(post => post.id !== postId));
+          // Refresh the current page of posts
+          await fetchPosts(postCurrentPage);
           alert('Post eliminado correctamente');
         } else {
           const errorData = await response.json();
@@ -280,7 +364,7 @@ export default function AdminDashboardPage() {
                 <FaUsers className="h-8 w-8 text-devi-color" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Usuarios</p>
-                  <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{userTotalCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -292,7 +376,7 @@ export default function AdminDashboardPage() {
                 <FaFileAlt className="h-8 w-8 text-devi-color" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Posts</p>
-                  <p className="text-2xl font-bold text-gray-900">{posts.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{postTotalCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -330,7 +414,12 @@ export default function AdminDashboardPage() {
             <div className="flex gap-2">
               <Button
                 variant={activeTab === 'users' ? 'link' : 'ghost'}
-                onClick={() => setActiveTab('users')}
+                onClick={() => {
+                  setActiveTab('users');
+                  if (users.length === 0) {
+                    fetchUsers(1);
+                  }
+                }}
                 className="flex items-center gap-2"
               >
                 <FaUsers />
@@ -338,7 +427,12 @@ export default function AdminDashboardPage() {
               </Button>
               <Button
                 variant={activeTab === 'posts' ? 'link' : 'ghost'}
-                onClick={() => setActiveTab('posts')}
+                onClick={() => {
+                  setActiveTab('posts');
+                  if (posts.length === 0) {
+                    fetchPosts(1);
+                  }
+                }}
                 className="flex items-center gap-2"
               >
                 <FaFileAlt />
@@ -367,34 +461,68 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                          <FaUsers className="text-gray-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{user.username || 'Sin nombre'}</h3>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <div className="flex gap-2 mt-1">
-                            <Badge variant={user.roles?.includes('admin') ? 'default' : 'outline'}>
-                              {user.roles || 'user'}
-                            </Badge>
+                  <>
+                    {filteredUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                            <FaUsers className="text-gray-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{user.username || 'Sin nombre'}</h3>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <div className="flex gap-2 mt-1">
+                              <Badge variant={user.roles?.includes('admin') ? 'default' : 'outline'}>
+                                {user.roles || 'user'}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="bg-white text-red-600 hover:text-red-700"
+                          >
+                            <FaTrash />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
+                    ))}
+                    
+                    {/* User Pagination Controls */}
+                    <div className="flex justify-between items-center mt-8">
+                      <div className="text-gray-600">
+                        Mostrando {filteredUsers.length} de {userTotalCount} usuarios
+                      </div>
+                      <div className="flex items-center space-x-4">
                         <Button
+                          onClick={() => handleUserPageChange(userCurrentPage - 1)}
+                          disabled={userCurrentPage === 1}
                           variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="bg-white text-red-600 hover:text-red-700"
+                          className="flex items-center"
                         >
-                          <FaTrash />
+                          <FaChevronLeft className="mr-2" />
+                          Anterior
+                        </Button>
+                        
+                        <span className="text-gray-600">
+                          Página {userCurrentPage} de {userTotalPages}
+                        </span>
+                        
+                        <Button
+                          onClick={() => handleUserPageChange(userCurrentPage + 1)}
+                          disabled={userCurrentPage === userTotalPages}
+                          variant="outline"
+                          className="flex items-center"
+                        >
+                          Siguiente
+                          <FaChevronRight className="ml-2" />
                         </Button>
                       </div>
                     </div>
-                  ))
+                  </>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     No se encontraron usuarios
@@ -416,33 +544,67 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {filteredPosts.length > 0 ? (
-                  filteredPosts.map((post) => (
-                    <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{post.title || 'Sin título'}</h3>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {post.content?.substring(0, 100) || 'Sin contenido'}...
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                          <span>Autor: {post.author?.username || 'Desconocido'}</span>
-                          <span>Estado: {post.status || 'draft'}</span>
-                          <span>
-                            Creado: {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '—'}
-                          </span>
+                  <>
+                    {filteredPosts.map((post) => (
+                      <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{post.title || 'Sin título'}</h3>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {post.content?.substring(0, 100) || 'Sin contenido'}...
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>Autor: {post.author?.username || 'Desconocido'}</span>
+                            <span>Estado: {post.status || 'draft'}</span>
+                            <span>
+                              Creado: {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '—'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletePost(post.id)}
+                            className="bg-white text-red-600 hover:text-red-700"
+                          >
+                            <FaTrash />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2 ml-4">
+                    ))}
+                    
+                    {/* Post Pagination Controls */}
+                    <div className="flex justify-between items-center mt-8">
+                      <div className="text-gray-600">
+                        Mostrando {filteredPosts.length} de {postTotalCount} posts
+                      </div>
+                      <div className="flex items-center space-x-4">
                         <Button
+                          onClick={() => handlePostPageChange(postCurrentPage - 1)}
+                          disabled={postCurrentPage === 1}
                           variant="outline"
-                          size="sm"
-                          onClick={() => handleDeletePost(post.id)}
-                          className="bg-white text-red-600 hover:text-red-700"
+                          className="flex items-center"
                         >
-                          <FaTrash />
+                          <FaChevronLeft className="mr-2" />
+                          Anterior
+                        </Button>
+                        
+                        <span className="text-gray-600">
+                          Página {postCurrentPage} de {postTotalPages}
+                        </span>
+                        
+                        <Button
+                          onClick={() => handlePostPageChange(postCurrentPage + 1)}
+                          disabled={postCurrentPage === postTotalPages}
+                          variant="outline"
+                          className="flex items-center"
+                        >
+                          Siguiente
+                          <FaChevronRight className="ml-2" />
                         </Button>
                       </div>
                     </div>
-                  ))
+                  </>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     No se encontraron posts
