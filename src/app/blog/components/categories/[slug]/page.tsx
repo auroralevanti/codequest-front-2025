@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { getUserCookie } from '@/lib/cookies';
 import { Badge } from "@/components/ui/badge";
+import { apiUrls } from '@/config/api';
 
 interface Post {
   id: string;
@@ -50,7 +51,7 @@ export default function CategoryPage() {
       try {
         // Fetch posts by category
         const postsResponse = await fetch(
-          `https://codequest-backend-2025.onrender.com/api/v1/posts?category=${slug}`,
+          `${apiUrls.posts.list()}?category=${slug}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export default function CategoryPage() {
           // Fallback: fetch category details separately
           try {
             const categoryResponse = await fetch(
-              `https://codequest-backend-2025.onrender.com/api/v1/categories/${slug}`,
+              apiUrls.categories.bySlug(slug),
               {
                 headers: {
                   'Content-Type': 'application/json',

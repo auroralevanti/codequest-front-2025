@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MdClose } from 'react-icons/md';
 import { apiUrls } from '@/config/api';
 import { getUserCookie } from '@/lib/cookies';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { AvatarComponent } from '../avatar/Avatar';
+import { ImageUploadButton } from '@/components/ui/image-upload-button';
+import { CategorySelector } from '@/components/ui/category-selector';
 
 interface EditData {
   postId?: string;
@@ -27,16 +29,13 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
   const [text, setText] = useState(editData?.content || '');
   const [title, setTitle] = useState(editData?.title || '');
   const [submitting, setSubmitting] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
   const [showTags, setShowTags] = useState(false);
   const [availableCategories, setAvailableCategories] = useState<{ id: string; name: string }[]>([]);
   const [availableTags, setAvailableTags] = useState<{ id: string; name: string }[]>([]);
-  const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(editData?.categoryId || null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(editData?.tagIds || []);
   const [images, setImages] = useState<string[]>(editData?.images || []);
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const userData = getUserCookie();
   const username = userData?.username;
@@ -68,9 +67,19 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
   useEffect(() => {
     (async () => {
       try {
+        const token = getUserCookie()?.token;
+        
         const [catsRes, tagsRes] = await Promise.all([
-          fetch(apiUrls.categories.list()),
-          fetch(apiUrls.tags.list()),
+          fetch(apiUrls.categories.list(), {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }),
+          fetch(apiUrls.tags.list(), {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }),
         ]);
 
         if (catsRes.ok) {
@@ -98,29 +107,66 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
 
   const handleSubmit = async () => {
     if (submitting || isUploading) return;
-    if (!title.trim() && !text.trim()) {
-      alert('Debe contener título');
+    
+    // Validation
+    if (!title.trim()) {
+      alert('El título es obligatorio');
+      return;
+    }
+
+    // Additional validation for editing
+    if (isEditing && !editData?.postId) {
+      console.error('[CreatePost] Missing postId for editing');
+      alert('ID de post no encontrado');
       return;
     }
 
     setSubmitting(true);
     try {
       const token = getUserCookie()?.token;
+      
+      // Log editData for debugging
+      console.log('[CreatePost] Edit data:', editData);
+      console.log('[CreatePost] isEditing:', isEditing);
+      console.log('[CreatePost] Post ID:', editData?.postId);
+      
+      // Prepare payload with only the fields that should be updated
       const payload: Record<string, unknown> = {
         title: title.trim(),
-        content: text.trim(),
-        status: 'published'
+        content: text.trim()
       };
       
+      // Only include status for new posts, not for updates
+      if (!isEditing) {
+        payload.status = 'published';
+      }
+      
+      // Only include categoryIds if a category is selected
       if (selectedCategoryId) payload.categoryIds = [selectedCategoryId];
+      // Only include tagIds if there are tags selected
       if (selectedTagIds.length) payload.tagIds = selectedTagIds;
+      // Only include images if there are images uploaded
       if (images.length) payload.images = images;
 
+      // Log payload for debugging
+      console.log('[CreatePost] Sending payload:', JSON.stringify(payload, null, 2));
+
+      // Ensure we have a valid postId when editing
+      // Use the correct endpoint for updates - byId for PUT/PATCH requests
       const url = isEditing && editData?.postId 
-        ? `https://codequest-backend-2025.onrender.com/api/v1/posts/${editData.postId}` 
+        ? apiUrls.posts.byId(String(editData.postId)) 
         : apiUrls.posts.create();
       
-      const method = isEditing ? 'PATCH' : 'POST';
+      // Use PUT for updating posts (more widely supported than PATCH)
+      const method = isEditing ? 'PUT' : 'POST';
+      // Log request details for debugging
+      console.log(`[CreatePost] Making ${method} request to ${url}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
 
       const res = await fetch(url, {
         method,
@@ -131,9 +177,42 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
         body: JSON.stringify(payload),
       });
 
+      console.log(`[CreatePost] Response from ${method} request to ${url}`, {
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries())
+      });
+
       if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Failed to ${isEditing ? 'update' : 'create'} post`);
+        let errorMessage = `Failed to ${isEditing ? 'update' : 'create'} post`;
+        let errorDetails = '';
+        
+        try {
+          // Try to get error details from response
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await res.json();
+            errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
+          } else {
+            const errorText = await res.text();
+            errorDetails = errorText || `${res.status} ${res.statusText}`;
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use the status
+          errorDetails = `${res.status} ${res.statusText}`;
+        }
+        
+        // Combine base error message with details
+        errorMessage = errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage;
+        console.error(`[CreatePost] ${errorMessage}`, {
+          url,
+          method,
+          status: res.status,
+          statusText: res.statusText,
+          payload: JSON.stringify(payload, null, 2)
+        });
+        
+        throw new Error(errorMessage);
       }
 
       const result = await res.json();
@@ -146,7 +225,8 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
       onClose && onClose();
     } catch (e) {
       console.error(`Error ${isEditing ? 'updating' : 'creating'} post`, e);
-      alert(`Error al ${isEditing ? 'actualizar' : 'crear'} post`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      alert(`Error al ${isEditing ? 'actualizar' : 'crear'} post: ${errorMessage}`);
     } finally {
       setSubmitting(false);
     }
@@ -182,8 +262,6 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
               <p className="font-bold text-black ml-5 mb-1">{username}</p>
             </div>
           </div>
-          
-
           <input
             className="w-full mt-3 bg-transparent border-0 focus:ring-0 p-0 text-xl font-semibold text-text-light dark:text-text-dark placeholder-subtext-light dark:placeholder-subtext-dark outline-none"
             placeholder="Título"
@@ -198,24 +276,19 @@ export default function CreatePost({ onClose, editData, isEditing = false }: Cre
             onChange={(e) => setText(e.target.value)}
           />
 
+          <CategorySelector
+            categories={availableCategories}
+            selectedCategoryId={selectedCategoryId}
+            onCategorySelect={setSelectedCategoryId}
+          />
+
           <div className="mt-3">
             <label className="text-sm text-subtext-light dark:text-subtext-dark mb-1 block">Imágenes añadidas</label>
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={async (e) => {
-                  const files = Array.from(e.target.files || []);
-                  if (files.length === 0) return;
-                  await handleFiles(files);
-                  (e.target as HTMLInputElement).value = '';
-                }}
-                className="hidden"
-              />
-              {isUploading && <span className="text-sm text-gray-500">Cargando...</span>}
-            </div>
+            <ImageUploadButton 
+              onFilesSelected={handleFiles} 
+              disabled={isUploading}
+              uploading={isUploading}
+            />
             <div className="mt-2 flex gap-2">
               {images.map((src, i) => (
                 <div key={i} className="relative w-20 h-20">

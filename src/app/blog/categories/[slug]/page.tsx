@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { CategoriesBadge } from '../../components/categories/CategoriesBadge';
 import PostCard from '../../components/post/PostCard';
 import { Badge } from "@/components/ui/badge";
+import { GoBackButton } from "@/components/ui/go-back-button";
 
 import { apiUrls } from '@/config/api';
 import { getUserCookie } from '@/lib/cookies';
@@ -85,6 +86,9 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-background justify-center items-center">
       <div className="mx-auto py-8 justify-center items-center">
+        <div className="flex top-4 left-4">
+          <GoBackButton />
+        </div>
         <div className="mb-6 flex flex-wrap justify-center items-center">
           <CategoriesBadge />
         </div>

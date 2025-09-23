@@ -71,6 +71,7 @@ export const apiUrls = {
     list: () => buildApiUrl('categories'),
     create: () => buildApiUrl('categories'),
     byId: (categoryId: string) => buildApiUrl('categories', `/${categoryId}`),
+    bySlug: (slug: string) => `${buildApiUrl('categories')}?slug=${slug}`,
   },
   
   // Tags endpoints

@@ -75,7 +75,7 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
         const url = `${apiUrls.posts.byId(postId)}/comments`;
         console.debug('[CommentsSection] fetching', url);
         const res = await fetch(url, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          headers: { Authorization: `Bearer ${token}` }
         });
         console.debug('[CommentsSection] response', res.status, res.statusText);
         if (!res.ok) {
@@ -146,18 +146,77 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     fetchComments();
   }, [postId]);
 
-  const handleAddComment = (data: { content: string; author: string }) => {
-    const newComment: NormalizedComment = {
-      id: Date.now().toString(),
-      postId: String(postId),
-      author: data.author,
-      content: data.content,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      isLiked: false,
-      replies: []
-    };
-    setComments(prev => [...prev, newComment]);
+  const handleAddComment = async (data: { content: string; author: string }) => {
+    try {
+      const token = getUserCookie()?.token;
+      if (!token) {
+        console.error('[CommentsSection] No authentication token found');
+        // Fallback to local state if no token
+        const newComment: NormalizedComment = {
+          id: Date.now().toString(),
+          postId: String(postId),
+          author: data.author,
+          content: data.content,
+          createdAt: new Date().toISOString(),
+          likes: 0,
+          isLiked: false,
+          replies: []
+        };
+        setComments(prev => [...prev, newComment]);
+        return;
+      }
+
+      // Post to API with correct format
+      const response = await fetch(apiUrls.comments.create(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          body: data.content,
+          postId: postId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CommentsSection] Failed to post comment:', response.status, response.statusText, errorText);
+        throw new Error(`Failed to post comment: ${response.status} ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      
+      // Normalize the response to match our internal structure
+      const apiComment = responseData.data || responseData;
+      const normalizedComment: NormalizedComment = {
+        id: String(apiComment.id ?? Date.now().toString()),
+        postId: String(apiComment.postId ?? postId),
+        author: String(apiComment.author?.username ?? apiComment.username ?? apiComment.author ?? data.author),
+        content: String(apiComment.body ?? apiComment.content ?? data.content),
+        createdAt: String(apiComment.createdAt ?? new Date().toISOString()),
+        likes: Number(apiComment.likes ?? 0),
+        isLiked: Boolean(apiComment.isLiked ?? false),
+        replies: Array.isArray(apiComment.replies) ? apiComment.replies : [],
+        avatarUrl: apiComment.author?.avatarUrl ?? apiComment.avatarUrl
+      };
+
+      setComments(prev => [...prev, normalizedComment]);
+    } catch (error) {
+      console.error('[CommentsSection] Error posting comment:', error);
+      // Fallback to local state on error
+      const newComment: NormalizedComment = {
+        id: Date.now().toString(),
+        postId: String(postId),
+        author: data.author,
+        content: data.content,
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        isLiked: false,
+        replies: []
+      };
+      setComments(prev => [...prev, newComment]);
+    }
   };
 
   const handleLike = (commentId: string) => {
@@ -176,31 +235,116 @@ export const CommentsSection = ({ postId, currentUser }: CommentsSectionProps) =
     );
   };
 
-  const handleReply = (parentId: string, content: string, author: string) => {
-    const newReply: NormalizedComment = {
-      id: Date.now().toString(),
-      postId: String(postId),
-      author,
-      content,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      isLiked: false,
-      replies: [],
-      parentId
-    };
+  const handleReply = async (parentId: string, content: string, author: string) => {
+    try {
+      const token = getUserCookie()?.token;
+      if (!token) {
+        console.error('[CommentsSection] No authentication token found for reply');
+        // Fallback to local state if no token
+        const newReply: NormalizedComment = {
+          id: Date.now().toString(),
+          postId: String(postId),
+          author,
+          content,
+          createdAt: new Date().toISOString(),
+          likes: 0,
+          isLiked: false,
+          replies: [],
+          parentId
+        };
 
-    setComments(prev => 
-      prev.map(comment => {
-        if (comment.id === parentId) {
-          const currentReplies = comment.replies ?? [];
-          return {
-            ...comment,
-            replies: [...currentReplies, newReply]
-          } as NormalizedComment;
-        }
-        return comment;
-      })
-    );
+        setComments(prev => 
+          prev.map(comment => {
+            if (comment.id === parentId) {
+              const currentReplies = comment.replies ?? [];
+              return {
+                ...comment,
+                replies: [...currentReplies, newReply]
+              } as NormalizedComment;
+            }
+            return comment;
+          })
+        );
+        return;
+      }
+
+      // Post reply to API with correct format
+      const response = await fetch(apiUrls.comments.create(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          body: content,
+          postId: postId,
+          parentCommentId: parentId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CommentsSection] Failed to post reply:', response.status, response.statusText, errorText);
+        throw new Error(`Failed to post reply: ${response.status} ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      
+      // Normalize the response to match our internal structure
+      const apiReply = responseData.data || responseData;
+      const normalizedReply: NormalizedComment = {
+        id: String(apiReply.id ?? Date.now().toString()),
+        postId: String(apiReply.postId ?? postId),
+        parentId: String(apiReply.parentCommentId ?? apiReply.parentId ?? parentId),
+        author: String(apiReply.author?.username ?? apiReply.username ?? apiReply.author ?? author),
+        content: String(apiReply.body ?? apiReply.content ?? content),
+        createdAt: String(apiReply.createdAt ?? new Date().toISOString()),
+        likes: Number(apiReply.likes ?? 0),
+        isLiked: Boolean(apiReply.isLiked ?? false),
+        replies: Array.isArray(apiReply.replies) ? apiReply.replies : [],
+        avatarUrl: apiReply.author?.avatarUrl ?? apiReply.avatarUrl
+      };
+
+      setComments(prev => 
+        prev.map(comment => {
+          if (comment.id === parentId) {
+            const currentReplies = comment.replies ?? [];
+            return {
+              ...comment,
+              replies: [...currentReplies, normalizedReply]
+            } as NormalizedComment;
+          }
+          return comment;
+        })
+      );
+    } catch (error) {
+      console.error('[CommentsSection] Error posting reply:', error);
+      // Fallback to local state on error
+      const newReply: NormalizedComment = {
+        id: Date.now().toString(),
+        postId: String(postId),
+        author,
+        content,
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        isLiked: false,
+        replies: [],
+        parentId
+      };
+
+      setComments(prev => 
+        prev.map(comment => {
+          if (comment.id === parentId) {
+            const currentReplies = comment.replies ?? [];
+            return {
+              ...comment,
+              replies: [...currentReplies, newReply]
+            } as NormalizedComment;
+          }
+          return comment;
+        })
+      );
+    }
   };
 
   if (loading) {

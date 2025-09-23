@@ -165,14 +165,7 @@ export default function PostCard({ postId, user, createdAt, body, title, images 
 }
 
 
-function IconButtons({ 
-  liked,
-  likeCount,
-  loading,
-  onToggleLike,
-  commentsCount, 
-  onToggleComments 
-}: { 
+function IconButtons({ liked, likeCount, loading,  onToggleLike, commentsCount, onToggleComments }: { 
   liked: boolean;
   likeCount: number;
   loading: boolean;
